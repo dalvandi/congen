@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.rodinp.core.internalElementTypes">
+      <internalElementType
+            class="com.dalvandi.congen.basis.ConstructorStatement"
+            id="constructorstatement"
+            name="Constructor Statement">
+      </internalElementType>
+   </extension>
+   <extension
+         point="org.rodinp.core.attributeTypes">
+      <attributeType
+            id="CSDeclaration"
+            kind="string"
+            name="Constructor Statement Name Attribute">
+      </attributeType>
+   </extension>
+   <extension
+         point="org.rodinp.core.itemRelations">
+      <relationship
+            parentTypeId="org.eventb.core.machineFile">
+         <childType
+               typeId="com.dalvandi.congen.constructorstatement">
+         </childType>
+      </relationship>
+   </extension>
+
+</plugin>

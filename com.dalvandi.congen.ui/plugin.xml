@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eventb.ui.editorItems">
+      <element
+            defaultColumn="0"
+            prefix="CONSTRUCTOR STATEMENTS"
+            typeId="com.dalvandi.congen.constructorstatement">
+      </element>
+      <childRelation
+            parentTypeId="org.eventb.core.machineFile">
+         <childType
+               priority="65"
+               typeId="com.dalvandi.congen.constructorstatement">
+         </childType>
+      </childRelation>
+            <attributeRelation
+            elementTypeId="com.dalvandi.congen.constructorstatement">
+         <attributeReference
+               descriptionId="org.eventb.ui.expression">
+         </attributeReference>
+         <attributeReference
+               descriptionId="org.eventb.ui.comment">
+         </attributeReference>
+      </attributeRelation>
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+                  <objectContribution
+            adaptable="false"
+            id="ConGenNew"
+            objectClass="org.eventb.core.IEventBRoot">
+         <menu
+               id="com.dalvandi.congen.ui.menu"
+               label="Contract Generation"
+               path="additions">
+         </menu>
+         <action
+               class="com.dalvandi.congen.ContractGenerationPlugin"
+               id="com.dalvandi.congen.ui.menu.action.ContractGenerationPlugin"
+               label="Generate Dafny Contracts"
+               menubarPath="com.dalvandi.congen.ui.menu/groupA">
+         </action>
+         <visibility>
+            <or>
+               <objectClass
+                     name="org.eventb.core.IMachineRoot">
+               </objectClass>
+            </or>
+         </visibility>
+
+      </objectContribution>
+         
+   </extension>
+
+</plugin>

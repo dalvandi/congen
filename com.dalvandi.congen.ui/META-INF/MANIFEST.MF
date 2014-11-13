@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Ui
+Bundle-SymbolicName: com.dalvandi.congen.ui;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: com.dalvandi.codegen.ui.Activator
+Bundle-Vendor: DALVANDI
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ com.dalvandi.congen;bundle-version="1.0.0",
+ org.rodinp.core;bundle-version="1.6.1",
+ org.eventb.core;bundle-version="2.5.1",
+ org.eventb.ui;bundle-version="2.6.0",
+ org.eclipse.ui.navigator;bundle-version="3.5.101"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy
