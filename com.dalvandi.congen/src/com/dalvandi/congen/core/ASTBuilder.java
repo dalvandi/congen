@@ -1,13 +1,18 @@
+/*
+ * Sadegh Dalvandi (www.dalvandi.com) - 13 November 2014
+ * 
+ * Class ASTBuilder
+ * Base class for building abstract syntax tree from assignments, predicates and expressions.
+ * 
+ * method treeBuilder receives a string of an expression and the machine that the expression comes from
+ * and returns the root node for the AST for that expression. 
+ * 
+ *
+*/
+
 package com.dalvandi.congen.core;
 
-import java.util.ArrayList;
-
-import org.eventb.core.IAction;
-import org.eventb.core.IEvent;
-import org.eventb.core.IGuard;
 import org.eventb.core.IMachineRoot;
-import org.eventb.core.IParameter;
-import org.eventb.core.IVariable;
 import org.eventb.core.ast.Assignment;
 import org.eventb.core.ast.AssociativeExpression;
 import org.eventb.core.ast.BecomesEqualTo;
@@ -25,13 +30,12 @@ import org.eventb.core.ast.Predicate;
 import org.eventb.core.ast.RelationalPredicate;
 import org.eventb.core.ast.SetExtension;
 import org.eventb.core.ast.UnaryExpression;
-import org.rodinp.core.RodinDBException;
 
 public class ASTBuilder {
 
 	private Formula<?> inputFormula;
 
-	ASTTreeNode treeBuilder(String str, IMachineRoot mch ,FormulaFactory fff) // TO DO: remove fff
+	ASTTreeNode treeBuilder(String str, IMachineRoot mch, FormulaFactory fff) // TO DO: remove fff
 	{
 		ASTTreeNode root = null;
 		FormulaFactory ff = mch.getFormulaFactory();
@@ -61,7 +65,7 @@ public class ASTBuilder {
 		
 		
 		
-	} // End of treePrinter
+	} 
 
 	private ASTTreeNode buildPredicateTree(Predicate in) {
 		ASTTreeNode predicateRoot = null;
