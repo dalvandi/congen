@@ -28,7 +28,7 @@ public class ContractGenerator {
 		private ArrayList<String> postConditionGenerator()
 		{
 			ArrayList<String> postconditions = new ArrayList<String>(); 
-			AssertionTreeBuilder astTree = new AssertionTreeBuilder();
+			AssertionTreeBuilder pctree = new AssertionTreeBuilder();			//Build AST tree for 
 			ASTTreeNode pcroot = null;
 			AssertionTranslator translation = new AssertionTranslator();
 			try {
@@ -38,7 +38,7 @@ public class ContractGenerator {
 						{
 						if(e.contentEquals(evt.getLabel()))
 						{
-							pcroot = astTree.postConditionTreeBuilder(machine, parameters,evt);
+							pcroot = pctree.postConditionTreeBuilder(machine, parameters,evt);
 							postconditions.add("ensures " + translation.translateASTTree(pcroot) + ";");
 
 						}

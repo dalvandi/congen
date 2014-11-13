@@ -15,6 +15,7 @@ public class AssertionTreeBuilder extends ASTBuilder {
 	private ArrayList<ASTTreeNode> typingnodes;
 	private ArrayList<ASTTreeNode> quantifiernodes;
 	private ArrayList<String> quantifierstr;
+	
 	protected AssertionTreeBuilder()
 	{
 		typingnodes = new ArrayList<ASTTreeNode>();
@@ -22,6 +23,11 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		quantifierstr = new ArrayList<String>();
 	}
 	
+	/*
+	 * postConditionTreeBuilder
+	 * 
+	 * This method builds a post-condition tree driven from event evt.  
+	 * */
 	ASTTreeNode postConditionTreeBuilder(IMachineRoot mch, ArrayList<String> mtdpar, IEvent evt) throws RodinDBException
 	{
 		ASTTreeNode pcroot;
@@ -31,6 +37,7 @@ public class AssertionTreeBuilder extends ASTBuilder {
 			pcroot = new ASTTreeNode("Implication", "==>",9999);
 			ASTTreeNode grds = new ASTTreeNode("AND", "&&", 9998);
 			ASTTreeNode acts = new ASTTreeNode("AND", "&&", 9998);
+			
 			for(IGuard grd: evt.getGuards())
 			{
 				grds.addNewChild(this.treeBuilder(grd.getPredicateString(), mch, mch.getFormulaFactory()));

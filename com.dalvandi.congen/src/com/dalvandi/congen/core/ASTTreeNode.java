@@ -10,7 +10,7 @@ public class ASTTreeNode implements Cloneable{
 	boolean isType;			// Is this node contains a type?
 	boolean isVariable;		// Is this a variable?
 	boolean isParameter;	// Is this an event's type?
-	boolean isTyping;		// Is this node is for typing?
+	boolean isTyping;		// Is this node for typing?
 	boolean isOperator;		// Is this an operator?
 	boolean isOld;			// Is this an old operator?
 	

@@ -15,7 +15,11 @@ public class ClassGenerator {
 	private ArrayList<String> constructoroperators;
 	private IMachineRoot machine;
 
-	
+	/*
+	 * This constructor receives a machine, list of its constructor statements,
+	 * list of its variables, and list of all types in the context. 
+	 * 
+	 */
 	public ClassGenerator(IMachineRoot mch,
 			ArrayList<String> cons,
 			ArrayList<String> vars, ArrayList<String> ty) {
@@ -27,6 +31,10 @@ public class ClassGenerator {
 			machine = mch;
 	}
 	
+	/*
+	 * This method prints and build the generated class. 
+	 * 
+	 */
 
 	public void outputGeneratedClass() throws RodinDBException
 	{
@@ -35,7 +43,6 @@ public class ClassGenerator {
 		ArrayList<String> invariants = new Invariants().getInvariants(machine, variables, types);
 		ArrayList<String> methods = new MethodGenerator().getMethods(machine, variables, constructoroperators);
 		
-		//System.out.println(machine.getRodinProject().getPath().toString());
 		
 		System.out.println(class_decl + "{");
 		buildDafnyFile(classname, class_decl + "{");
@@ -90,6 +97,11 @@ public class ClassGenerator {
 		
 	}
 
+	/*
+	 * This method build a Dafny file containing the generated class 
+	 * 
+	 */
+
 	private void buildDafnyFile(String mtdname, String st)
 	{
 		BufferedWriter bw = null;
@@ -109,6 +121,11 @@ public class ClassGenerator {
 
 	}
 
+	/*
+	 * This method build a tree for all generic types (carrier sets taken from contexts)
+	 * and then translate it to text and returns declaration of the class with regards 
+	 * to those generic types. 
+	 */
 	private String getClassDeclartion() {
 
 		if(!types.isEmpty())
@@ -124,7 +141,7 @@ public class ClassGenerator {
 		}
 		
 		else
-			return "class " + classname + "{}";
+			return "class " + classname;
 						
 	}
 	

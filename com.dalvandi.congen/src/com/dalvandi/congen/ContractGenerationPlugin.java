@@ -1,3 +1,13 @@
+/*
+ * Sadegh Dalvandi (www.dalvandi.com) - 13 November 2014
+ * 
+ * Class ContractGenerationPlugin
+ * Whenever a user invoke the contract generator for generating contracts from Rodin,
+ * method run() of this class is invoked.
+ * 
+ * 
+ *
+*/
 package com.dalvandi.congen;
 
 import java.util.ArrayList;
@@ -27,6 +37,8 @@ import org.eventb.core.ast.IParseResult;
 @SuppressWarnings("restriction")
 public class ContractGenerationPlugin implements IObjectActionDelegate {
 	IStructuredSelection selection;
+
+	//TO DO: following variables to be removed.
 	IMachineRoot mch;
 	FreeIdentifier[] ident;
 	IParseResult parseResult;
@@ -35,15 +47,17 @@ public class ContractGenerationPlugin implements IObjectActionDelegate {
 	
 	@Override
 	public void run(org.eclipse.jface.action.IAction arg0) {
-		System.out.println("Contract Generator Started...");
+		System.out.println("Contract Generator Plug-in Started...");
 		
 		
 		ArrayList<String> variables = getVariables();
 		ArrayList<String> types = getTypes();
-		ArrayList<String> constructoroperators = getConstructorStatements();
+		ArrayList<String> constructorstatements = getConstructorStatements();
+		
 		IMachineRoot machine = getCurrentMachine();
 		
-		ClassGenerator cls = new ClassGenerator(machine, constructoroperators, variables, types);
+		ClassGenerator cls = new ClassGenerator(machine, constructorstatements, variables, types);
+		
 	    try {
 			cls.outputGeneratedClass();
 	    	} catch (RodinDBException e) {
@@ -100,7 +114,10 @@ public class ContractGenerationPlugin implements IObjectActionDelegate {
         return machine;    
     }
 	
-	
+	/*
+	 * This method returns all constructor statements of the machine 
+	 * 
+	 */
 	private ArrayList<String> getConstructorStatements()
 	{
 		ArrayList<String> constats = new ArrayList<String>();
@@ -110,18 +127,21 @@ public class ContractGenerationPlugin implements IObjectActionDelegate {
 			{
 				if(el instanceof IConstructorStatement)
 				{
-				//System.out.println();	
 					constats.add(((IConstructorStatement) el).getExpressionString());
 				}
 			}
 		} catch (RodinDBException e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		}
 		return constats;
 		
 	}
 	
+	/*
+	 * This method returns all variables of the machine 
+	 * 
+	 */
 	private ArrayList<String> getVariables()
 	{
 	
@@ -134,7 +154,6 @@ public class ContractGenerationPlugin implements IObjectActionDelegate {
 				variables.add(var.getIdentifierString());
 			}
 		} catch (RodinDBException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -142,6 +161,11 @@ public class ContractGenerationPlugin implements IObjectActionDelegate {
 		
 	}
 	
+	/*
+	 * This method returns all carrier sets of contexts that the machine sees 
+	 * 
+	 */
+
 	private ArrayList<String> getTypes()
 	{
 
@@ -151,7 +175,7 @@ public class ContractGenerationPlugin implements IObjectActionDelegate {
 		try {
 			see = machine.getSeesClauses();
 		} catch (RodinDBException e1) {
-			// TODO Auto-generated catch block
+
 			e1.printStackTrace();
 		}
 		IContextRoot context;
@@ -165,12 +189,12 @@ public class ContractGenerationPlugin implements IObjectActionDelegate {
 						types.add(type.getIdentifierString());
 					}
 				} catch (RodinDBException e) {
-					// TODO Auto-generated catch block
+					
 					e.printStackTrace();
 				}
 
 			} catch (RodinDBException e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
 			}
 		}

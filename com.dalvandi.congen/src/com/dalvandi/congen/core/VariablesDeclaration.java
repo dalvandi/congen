@@ -9,7 +9,11 @@ import org.rodinp.core.RodinDBException;
 public class VariablesDeclaration {
 
 	
-	
+	/*
+	 * This method declaration of  
+	 * 
+	 */
+
 	public ArrayList<String> getVariablesDeclaration(IMachineRoot mch, ArrayList<String> vars, ArrayList<String> types) throws RodinDBException
 	{
 		ASTBuilder itb = new ASTBuilder();
@@ -33,7 +37,7 @@ public class VariablesDeclaration {
 
 	private boolean isTypingTree(ASTTreeNode node, ArrayList<String> vars, ArrayList<String> types) {
 
-		if(node.tag != 107 )
+		if(node.tag != 107 && node.tag != 111 )
 			return false;
 		else 
 		{
