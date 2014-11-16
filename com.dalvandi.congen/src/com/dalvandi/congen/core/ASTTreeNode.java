@@ -11,6 +11,7 @@ public class ASTTreeNode implements Cloneable{
 	boolean isVariable;		// Is this a variable?
 	boolean isParameter;	// Is this an event's type?
 	boolean isTyping;		// Is this node for typing?
+	boolean isExtended;		// Is this an operator?
 	boolean isOperator;		// Is this an operator?
 	boolean isOld;			// Is this an old operator?
 	
@@ -26,13 +27,14 @@ public class ASTTreeNode implements Cloneable{
 		isVariable = false;
 		isParameter = false;
 		isTyping = false;
+		isExtended = false;
 		isOperator = false;
 		isOld = false;
 	}
 	
 	
 	ASTTreeNode(String ty, String c, int t, boolean Type, boolean Variable, boolean Parameter, 
-			boolean Typing, boolean Operator, boolean Old)
+			boolean Typing, boolean Extended, boolean Operator, boolean Old)
 	{
 		children = new ArrayList<ASTTreeNode>();
 		type = ty;
@@ -43,6 +45,7 @@ public class ASTTreeNode implements Cloneable{
 		isVariable = Variable;
 		isParameter = Parameter;
 		isTyping = Typing;
+		isExtended = Extended;
 		isOperator = Operator;
 		isOld = Old;
 	}

@@ -12,7 +12,7 @@ import org.rodinp.core.RodinDBException;
 
 public class MethodGenerator {
 
-	public ArrayList<String> getMethods(IMachineRoot mch, ArrayList<String> vars, ArrayList<String> constat) throws RodinDBException
+	public ArrayList<String> getMethods(IMachineRoot mch, ArrayList<String> vars,ArrayList<String> types, ArrayList<String> constat) throws RodinDBException
 	{
 		
 		ArrayList<String> methods = new ArrayList<String>();
@@ -23,7 +23,7 @@ public class MethodGenerator {
 			String methodname = getMethodName(s);
 			ArrayList<String> metpar = getMethodParameters(s);
 			ArrayList<String> events = getMethodEvents(s);
-			ArrayList<String> method = getMethod(mch, vars, methodname, metpar, events);
+			ArrayList<String> method = getMethod(mch, vars, types, methodname, metpar, events);
 			methods.addAll(methods.size(), method);
 
 		}
@@ -33,10 +33,10 @@ public class MethodGenerator {
 		
 	}
 
-	private ArrayList<String> getMethod(IMachineRoot mch, ArrayList<String> vars, String methodname, ArrayList<String> metpar, ArrayList<String> events) throws RodinDBException {
+	private ArrayList<String> getMethod(IMachineRoot mch, ArrayList<String> vars, ArrayList<String> types, String methodname, ArrayList<String> metpar, ArrayList<String> events) throws RodinDBException {
 		
-		String method_decl = getMethodDeclaration(mch,methodname, metpar, events);
-		ContractGenerator methodpostcondition = new ContractGenerator(mch, vars, methodname, metpar, events);
+		String method_decl = getMethodDeclaration(mch,methodname, metpar, events,vars, types);
+		ContractGenerator methodpostcondition = new ContractGenerator(mch, vars, types, methodname, metpar, events);
 		ArrayList<String> postconditions = methodpostcondition.getMethodPostconditions();
 		ArrayList<String> method = new ArrayList<String>();
 		ArrayList<String> precondition = new ArrayList<String>();
@@ -54,9 +54,9 @@ public class MethodGenerator {
 	}
 
 	private String getMethodDeclaration(IMachineRoot mch,
-			String methodname, ArrayList<String> metpar, ArrayList<String> events) throws RodinDBException {
+			String methodname, ArrayList<String> metpar, ArrayList<String> events,ArrayList<String> vars,ArrayList<String> types) throws RodinDBException {
 
-		AssertionTreeBuilder astTree = new AssertionTreeBuilder();
+		AssertionTreeBuilder astTree = new AssertionTreeBuilder(vars, types);
 		String evt = events.get(0);
 		ASTTreeNode methodtypes = astTree.methodTypingTreeBuilder(mch, metpar, evt);
 		ASTTranslator translation = new ASTTranslator();

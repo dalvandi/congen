@@ -14,6 +14,7 @@ public class ASTTranslator {
 		int argnum; // Number of arguments
 		boolean isType;
 		String translation; // Dafny translation
+	
 		protected TranslationRules(int op, int arg, String tr, boolean type)
 			{
 				nodetype = op;
@@ -34,6 +35,7 @@ public class ASTTranslator {
 	public static final int ASSOCIATIVEEXPRESSION = 6;
 	public static final int TYPE = 7;
 	protected HashMap<Integer, TranslationRules> translation_map; 
+	protected HashMap<String, TranslationRules> translation_extended; 
 
 
 	protected ASTTranslator(){
@@ -43,7 +45,7 @@ public class ASTTranslator {
 		translation_map.put(1, new TranslationRules(IDENTIFIER,0,"",false));
 		translation_map.put(4, new TranslationRules(LITERAL,0,"",false));
 		translation_map.put(107, new TranslationRules(MATHOPERATOR,0,"type( : )#nontype( in )",false)); //∈
-		translation_map.put(111, new TranslationRules(MATHOPERATOR,0,"type( : )#nontype( in )",false)); //<=
+		translation_map.put(111, new TranslationRules(MATHOPERATOR,0,"type( set<arg1> )#nontype( <= )",false)); //<=
 		translation_map.put(108, new TranslationRules(MATHOPERATOR,0," !in ",false)); //∈
 		translation_map.put(101, new TranslationRules(MATHOPERATOR,0,"==",false)); // =
 		translation_map.put(401, new TranslationRules(TYPE,0,"int",true)); // ℤ
@@ -72,6 +74,14 @@ public class ASTTranslator {
 		translation_map.put(9999, new TranslationRules(MATHOPERATOR,0," ==> ",false));
 
 		
+		translation_extended = new HashMap<String, TranslationRules>();
+		
+		translation_extended.put("seq", new TranslationRules(EXTENDEDOPERATOR,1,"seq<arg1>",true));
+		translation_extended.put("seqSize", new TranslationRules(EXTENDEDOPERATOR,1,"|arg1|",false));
+		translation_extended.put("seqSliceToN", new TranslationRules(EXTENDEDOPERATOR,2,"arg1[..arg2+1]",false));
+		translation_extended.put("seqSliceFromN", new TranslationRules(EXTENDEDOPERATOR,2,"arg1[arg2..]",false));
+		translation_extended.put("seqConcat", new TranslationRules(EXTENDEDOPERATOR,2,"arg1 + arg2",false));
+		translation_extended.put("seqPrepend", new TranslationRules(EXTENDEDOPERATOR,2,"[arg2] + arg1",false));
 	}
 	
 	
@@ -86,6 +96,7 @@ public class ASTTranslator {
 	private String translateNodeToDafny(ASTTreeNode node) {
 
 		TranslationRules rule = (TranslationRules) translation_map.get(node.tag);
+		
 		if(rule != null){
 		if(rule.nodetype == IDENTIFIER || rule.nodetype == LITERAL)
 			{

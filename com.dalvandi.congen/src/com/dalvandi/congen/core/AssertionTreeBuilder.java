@@ -16,11 +16,13 @@ public class AssertionTreeBuilder extends ASTBuilder {
 	private ArrayList<ASTTreeNode> quantifiernodes;
 	private ArrayList<String> quantifierstr;
 	
-	protected AssertionTreeBuilder()
+	protected AssertionTreeBuilder(ArrayList<String> v, ArrayList<String> t)
 	{
 		typingnodes = new ArrayList<ASTTreeNode>();
 		quantifiernodes = new ArrayList<ASTTreeNode>();
 		quantifierstr = new ArrayList<String>();
+		vars = v;
+		types = t;
 	}
 	
 	/*
@@ -40,11 +42,11 @@ public class AssertionTreeBuilder extends ASTBuilder {
 			
 			for(IGuard grd: evt.getGuards())
 			{
-				grds.addNewChild(this.treeBuilder(grd.getPredicateString(), mch, mch.getFormulaFactory()));
+				grds.addNewChild(this.treeBuilder(grd.getPredicateString(), mch));
 			}
 			for(IAction act: evt.getActions())
 			{
-				acts.addNewChild(this.treeBuilder(act.getAssignmentString(), mch, mch.getFormulaFactory()));
+				acts.addNewChild(this.treeBuilder(act.getAssignmentString(), mch));
 			}
 			
 			pcroot.addNewChild(grds);
@@ -56,7 +58,7 @@ public class AssertionTreeBuilder extends ASTBuilder {
 			pcroot = new ASTTreeNode("AND", "&&",9998);
 			for(IAction act: evt.getActions())
 			{
-				pcroot.addNewChild(this.treeBuilder(act.getAssignmentString(), mch, mch.getFormulaFactory()));
+				pcroot.addNewChild(this.treeBuilder(act.getAssignmentString(), mch));
 			}
 
 		}
@@ -256,7 +258,7 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		}
 		for(IGuard g : event.getGuards())
 		{
-			guardtree.addNewChild(this.treeBuilder(g.getPredicateString(), machine, machine.getFormulaFactory()));
+			guardtree.addNewChild(this.treeBuilder(g.getPredicateString(), machine));
 		}
 		
 		ArrayList<String> variables = new ArrayList<String>();

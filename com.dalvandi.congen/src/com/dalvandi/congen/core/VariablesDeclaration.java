@@ -10,22 +10,23 @@ public class VariablesDeclaration {
 
 	
 	/*
-	 * This method declaration of  
+	 * This method returns declaration of variables.
+	 * Its arguments are (machine, list of variables, list of types(carrier sets))  
 	 * 
 	 */
 
 	public ArrayList<String> getVariablesDeclaration(IMachineRoot mch, ArrayList<String> vars, ArrayList<String> types) throws RodinDBException
 	{
-		ASTBuilder itb = new ASTBuilder();
+		ASTBuilder itb = new ASTBuilder(vars, types);
 		ArrayList<String> vars_decl = new ArrayList<String>();
 		ASTTranslator tr = new ASTTranslator();
 		
 		for(IInvariant inv : mch.getInvariants())
 		{
-			if(isTypingTree(itb.treeBuilder(inv.getPredicateString(), mch, mch.getFormulaFactory()), vars, types))
+			if(isTypingTree(itb.treeBuilder(inv.getPredicateString(), mch), vars, types))
 			{
-				ASTTreeNode n = itb.treeBuilder(inv.getPredicateString(), mch, mch.getFormulaFactory()); 
-				// TO DO: It is better to set metadata datas when we are building the tree. Especially isType and isVariable
+				ASTTreeNode n = itb.treeBuilder(inv.getPredicateString(), mch); 
+				// TO DO: It is better to set meta-data data when we are building the tree. Especially isType and isVariable
 				n.children.get(1).isType = true;
 				vars_decl.add(tr.translateASTTree(n));
 			}
@@ -43,7 +44,10 @@ public class VariablesDeclaration {
 		{
 			if(vars.contains(node.children.get(0).content))
 					{
-					if(types.contains(node.children.get(1).content) || node.children.get(1).tag == 401 ||  node.children.get(1).tag == 1001)
+				// This only checks for types or int or seq
+				// TO DO: it is not enough. other types like boolean, sets and etc are not included. There should be an arraylist containing
+				// tags of all possible types.
+				if(types.contains(node.children.get(1).content) || node.children.get(1).tag == 401 ||  node.children.get(1).tag == 1001)
 					{
 						return true;
 					}

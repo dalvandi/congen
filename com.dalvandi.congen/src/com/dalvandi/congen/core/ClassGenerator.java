@@ -2,7 +2,7 @@ package com.dalvandi.congen.core;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.io.*;
+//import java.io.*;
 
 import org.eventb.core.IMachineRoot;
 import org.rodinp.core.RodinDBException;
@@ -41,7 +41,7 @@ public class ClassGenerator {
 		String class_decl = getClassDeclartion();
 		ArrayList<String> variables_decl = new VariablesDeclaration().getVariablesDeclaration(machine, variables, types);
 		ArrayList<String> invariants = new Invariants().getInvariants(machine, variables, types);
-		ArrayList<String> methods = new MethodGenerator().getMethods(machine, variables, constructoroperators);
+		ArrayList<String> methods = new MethodGenerator().getMethods(machine, variables, types, constructoroperators);
 		
 		
 		System.out.println(class_decl + "{");
@@ -104,7 +104,7 @@ public class ClassGenerator {
 
 	private void buildDafnyFile(String mtdname, String st)
 	{
-		BufferedWriter bw = null;
+		/*BufferedWriter bw = null;
 		try {
 		bw = new BufferedWriter(new FileWriter(mtdname + ".dfy", true));
 		bw.write(st);
@@ -118,6 +118,7 @@ public class ClassGenerator {
 		}
 		catch (IOException ioe2){}
 		}
+		*/
 
 	}
 

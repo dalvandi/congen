@@ -12,6 +12,8 @@
 
 package com.dalvandi.congen.core;
 
+import java.util.ArrayList;
+
 import org.eventb.core.IMachineRoot;
 import org.eventb.core.ast.Assignment;
 import org.eventb.core.ast.AssociativeExpression;
@@ -32,10 +34,23 @@ import org.eventb.core.ast.SetExtension;
 import org.eventb.core.ast.UnaryExpression;
 
 public class ASTBuilder {
-
+	
+	
 	private Formula<?> inputFormula;
 
-	ASTTreeNode treeBuilder(String str, IMachineRoot mch, FormulaFactory fff) // TO DO: remove fff
+	protected ArrayList<String> vars;
+	protected ArrayList<String> types;
+	
+	protected ASTBuilder(){}
+	
+	protected ASTBuilder(ArrayList<String> v, ArrayList<String> t)
+	{
+		vars = v;
+		types = t;
+	}
+	
+	
+	ASTTreeNode treeBuilder(String str, IMachineRoot mch) 
 	{
 		ASTTreeNode root = null;
 		FormulaFactory ff = mch.getFormulaFactory();
@@ -132,7 +147,18 @@ public class ASTBuilder {
 
 		if(e.getChildCount() == 0)
 		{
-			ASTTreeNode leaf = new ASTTreeNode(e.getClass().getSimpleName(), e.toString(), e.getTag()); 
+
+			ASTTreeNode leaf = new ASTTreeNode(e.getClass().getSimpleName(), e.toString(), e.getTag());
+			
+			if(vars.contains(e.toString()))
+				{
+					leaf.isVariable = true;
+				}
+			else if(types.contains(e.toString()))
+				{
+					leaf.isType = true;
+				}
+			
 			return leaf;
 		}
 		else if(e instanceof AssociativeExpression)
@@ -163,7 +189,10 @@ public class ASTBuilder {
 		else if(e instanceof ExtendedExpression)
 		{
 			Expression[] exp_child = ((ExtendedExpression) e).getChildExpressions();
-			ASTTreeNode extended_exp = new ASTTreeNode(e.getClass().getSimpleName(), e.toString(), e.getTag());
+			
+			ASTTreeNode extended_exp = new ASTTreeNode(e.getClass().getSimpleName(), ((ExtendedExpression) e).getExtension().getSyntaxSymbol(), e.getTag());
+			
+			extended_exp.isExtended = true;
 			
 			for(Expression e_ch : exp_child)
 			{
@@ -188,10 +217,10 @@ public class ASTBuilder {
 		{
 			Expression[] set_child = ((SetExtension) e).getMembers();
 			ASTTreeNode setex_exp = new ASTTreeNode(e.getClass().getSimpleName(), e.toString(), e.getTag());
+
 			for(Expression s_ch : set_child)
 			{
 				setex_exp.addNewChild(buildExpressionTree(s_ch));
-									
 			}
 
 			return setex_exp;

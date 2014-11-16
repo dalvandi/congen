@@ -10,15 +10,15 @@ public class Invariants{
 
 	public ArrayList<String> getInvariants(IMachineRoot mch,
 			ArrayList<String> vars, ArrayList<String> types) throws RodinDBException {
-		ASTBuilder itb = new ASTBuilder();
+		ASTBuilder itb = new ASTBuilder(vars, types);
 		ASTTranslator tr = new ASTTranslator();
 		ArrayList<String> invs = new ArrayList<String>();
 		
 		for(IInvariant inv : mch.getInvariants())
 		{
-			if(!isTypingTree(itb.treeBuilder(inv.getPredicateString(), mch, mch.getFormulaFactory()), vars, types))
+			if(!isTypingTree(itb.treeBuilder(inv.getPredicateString(), mch), vars, types))
 			{
-				ASTTreeNode n = itb.treeBuilder(inv.getPredicateString(), mch, mch.getFormulaFactory());
+				ASTTreeNode n = itb.treeBuilder(inv.getPredicateString(), mch);
 				invs.add(tr.translateASTTree(n));
 
 			}
