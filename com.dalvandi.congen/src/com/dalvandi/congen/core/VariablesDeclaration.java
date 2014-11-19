@@ -27,6 +27,8 @@ public class VariablesDeclaration {
 			{
 				ASTTreeNode n = itb.treeBuilder(inv.getPredicateString(), mch); 
 				// TO DO: It is better to set meta-data data when we are building the tree. Especially isType and isVariable
+				if(n.tag == 111)
+					n.tag = 9111;
 				n.children.get(1).isType = true;
 				vars_decl.add(tr.translateASTTree(n));
 			}
@@ -37,17 +39,15 @@ public class VariablesDeclaration {
 	}
 
 	private boolean isTypingTree(ASTTreeNode node, ArrayList<String> vars, ArrayList<String> types) {
-
-		if(node.tag != 107 && node.tag != 111 )
+		Types t = new Types(); 
+		
+		if(node.tag != 107 && node.tag != 111) //????
 			return false;
 		else 
 		{
 			if(vars.contains(node.children.get(0).content))
 					{
-				// This only checks for types or int or seq
-				// TO DO: it is not enough. other types like boolean, sets and etc are not included. There should be an arraylist containing
-				// tags of all possible types.
-				if(types.contains(node.children.get(1).content) || node.children.get(1).tag == 401 ||  node.children.get(1).tag == 1001)
+				if(types.contains(node.children.get(1).content) || t.builtin_types.contains(node.children.get(1).tag) ||  t.extended_types.contains(node.children.get(1).content))
 					{
 						return true;
 					}

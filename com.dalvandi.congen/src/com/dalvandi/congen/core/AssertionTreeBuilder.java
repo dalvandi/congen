@@ -36,9 +36,9 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		
 		if(evt.getGuards().length != 0)
 		{
-			pcroot = new ASTTreeNode("Implication", "==>",9999);
-			ASTTreeNode grds = new ASTTreeNode("AND", "&&", 9998);
-			ASTTreeNode acts = new ASTTreeNode("AND", "&&", 9998);
+			pcroot = new ASTTreeNode("Implication", "==>",251);
+			ASTTreeNode grds = new ASTTreeNode("AND", "&&", 351);
+			ASTTreeNode acts = new ASTTreeNode("AND", "&&", 351);
 			
 			for(IGuard grd: evt.getGuards())
 			{
@@ -55,7 +55,7 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		}
 		else
 		{
-			pcroot = new ASTTreeNode("AND", "&&",9998);
+			pcroot = new ASTTreeNode("AND", "&&",351);
 			for(IAction act: evt.getActions())
 			{
 				pcroot.addNewChild(this.treeBuilder(act.getAssignmentString(), mch));
@@ -97,7 +97,7 @@ public class AssertionTreeBuilder extends ASTBuilder {
 			ArrayList<String> mtdpar, ArrayList<String> parameters) {
 			
 		if(!quantifiernodes.isEmpty()){
-			ASTTreeNode quantifier = new ASTTreeNode("Quantifier", "forall", 9997);
+			ASTTreeNode quantifier = new ASTTreeNode("Quantifier", "forall", 851); /// changed the old one
 			ASTTreeNode coma = new ASTTreeNode("Quantifier", ",", 9996);
 		
 		for(ASTTreeNode n : quantifiernodes)
@@ -219,7 +219,7 @@ public class AssertionTreeBuilder extends ASTBuilder {
 			node.isType = true; //??????????????????????????????? I DONT KNOW
 		}
 
-		if(node.tag == 9999) // left handside of implication
+		if(node.tag == 251) // left handside of implication
 		{
 			markVariablesOld(node.children.get(0), variables);
 		}
@@ -272,7 +272,6 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		
 		for(IParameter par : pars)
 		{
-			if(!parameters.contains(par.getIdentifierString()))
 			{
 				params.add(par.getIdentifierString());
 				//System.out.println(par.getIdentifierString());

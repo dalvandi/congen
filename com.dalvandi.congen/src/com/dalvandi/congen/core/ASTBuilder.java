@@ -13,14 +13,19 @@
 package com.dalvandi.congen.core;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import org.eventb.core.IMachineRoot;
 import org.eventb.core.ast.Assignment;
 import org.eventb.core.ast.AssociativeExpression;
+import org.eventb.core.ast.AssociativePredicate;
 import org.eventb.core.ast.BecomesEqualTo;
 import org.eventb.core.ast.BecomesMemberOf;
 import org.eventb.core.ast.BecomesSuchThat;
 import org.eventb.core.ast.BinaryExpression;
+import org.eventb.core.ast.BinaryPredicate;
+import org.eventb.core.ast.BoundIdentDecl;
+import org.eventb.core.ast.BoundIdentifier;
 import org.eventb.core.ast.Expression;
 import org.eventb.core.ast.ExtendedExpression;
 import org.eventb.core.ast.Formula;
@@ -29,6 +34,7 @@ import org.eventb.core.ast.FreeIdentifier;
 import org.eventb.core.ast.IParseResult;
 import org.eventb.core.ast.LanguageVersion;
 import org.eventb.core.ast.Predicate;
+import org.eventb.core.ast.QuantifiedPredicate;
 import org.eventb.core.ast.RelationalPredicate;
 import org.eventb.core.ast.SetExtension;
 import org.eventb.core.ast.UnaryExpression;
@@ -40,7 +46,7 @@ public class ASTBuilder {
 
 	protected ArrayList<String> vars;
 	protected ArrayList<String> types;
-	
+	private IMachineRoot machine;
 	protected ASTBuilder(){}
 	
 	protected ASTBuilder(ArrayList<String> v, ArrayList<String> t)
@@ -52,6 +58,7 @@ public class ASTBuilder {
 	
 	ASTTreeNode treeBuilder(String str, IMachineRoot mch) 
 	{
+		machine = mch;
 		ASTTreeNode root = null;
 		FormulaFactory ff = mch.getFormulaFactory();
 		IParseResult parseResult = ff.parseExpression(str, LanguageVersion.LATEST, null);
@@ -92,8 +99,55 @@ public class ASTBuilder {
 			predicateRoot.addNewChild(buildExpressionTree(left));
 			predicateRoot.addNewChild(buildExpressionTree(right));
 		}
-		
+		else if(in instanceof QuantifiedPredicate)
+		{
+			predicateRoot = new ASTTreeNode(in.getClass().getSimpleName(), in.toString(), in.getTag());
+			ASTTreeNode quantifiers = new ASTTreeNode("Quantifiers", ",", 9996);
+			BoundIdentDecl[] bi = ((QuantifiedPredicate) in).getBoundIdentDecls();
+			for(BoundIdentDecl b : bi)
+			{
+				quantifiers.addNewChild(new ASTTreeNode(b.getClass().getSimpleName(), b.toString(), b.getTag()));
+			}
+			predicateRoot.addNewChild(quantifiers);
+			Predicate p = ((QuantifiedPredicate) in).getPredicate();
+			String ps = getPredicateText(p,bi);
+			predicateRoot.addNewChild(treeBuilder(ps, machine));			
+		}
+		else if(in instanceof BinaryPredicate)
+		{
+			predicateRoot = new ASTTreeNode(in.getClass().getSimpleName(), in.toString(), in.getTag());
+			Predicate left = ((BinaryPredicate) in).getLeft();
+			Predicate right = ((BinaryPredicate) in).getLeft();
+			predicateRoot.addNewChild(treeBuilder(left.toString(), machine));
+			predicateRoot.addNewChild(treeBuilder(right.toString(), machine));
+		}
+		else if(in instanceof AssociativePredicate)
+		{
+			predicateRoot = new ASTTreeNode(in.getClass().getSimpleName(), in.toString(), in.getTag());
+			Predicate[] pchildren = ((AssociativePredicate) in).getChildren();
+			for(Predicate p : pchildren)
+			{
+				predicateRoot.addNewChild(treeBuilder(p.toString(), machine));
+			}
+		}
+		else
+		{
+			System.out.println("Ridi : " + in.getClass().getSimpleName());
+		}
 		return predicateRoot;
+	}
+
+	private String getPredicateText(Predicate p, BoundIdentDecl[] bi) {
+		String ps = p.toString();
+		int i = bi.length-1;
+		for(BoundIdentDecl b : bi)
+		{
+			String id = "[["+i+"]]";
+			ps = ps.replace(id, b.toString());
+			i--;
+		}
+
+		return ps;
 	}
 
 	private ASTTreeNode buildAssignmentTree(Assignment in) {
@@ -190,7 +244,7 @@ public class ASTBuilder {
 		{
 			Expression[] exp_child = ((ExtendedExpression) e).getChildExpressions();
 			
-			ASTTreeNode extended_exp = new ASTTreeNode(e.getClass().getSimpleName(), ((ExtendedExpression) e).getExtension().getSyntaxSymbol(), e.getTag());
+			ASTTreeNode extended_exp = new ASTTreeNode(e.getClass().getSimpleName(), ((ExtendedExpression) e).getExtension().getSyntaxSymbol(), 99999);//e.getTag()); //
 			
 			extended_exp.isExtended = true;
 			
@@ -217,11 +271,12 @@ public class ASTBuilder {
 		{
 			Expression[] set_child = ((SetExtension) e).getMembers();
 			ASTTreeNode setex_exp = new ASTTreeNode(e.getClass().getSimpleName(), e.toString(), e.getTag());
-
+			ASTTreeNode comma = new ASTTreeNode("Comma,", ",", 9996);
 			for(Expression s_ch : set_child)
 			{
-				setex_exp.addNewChild(buildExpressionTree(s_ch));
+				comma.addNewChild(buildExpressionTree(s_ch));
 			}
+			setex_exp.addNewChild(comma);
 
 			return setex_exp;
 

@@ -31,23 +31,17 @@ import org.rodinp.core.IRodinElement;
 import org.rodinp.core.IRodinFile;
 import org.rodinp.core.IRodinProject;
 import org.rodinp.core.RodinDBException;
-import org.eventb.core.ast.FreeIdentifier;
-import org.eventb.core.ast.IParseResult;
 
 @SuppressWarnings("restriction")
 public class ContractGenerationPlugin implements IObjectActionDelegate {
 	IStructuredSelection selection;
-
-	//TO DO: following variables to be removed.
-	IMachineRoot mch;
-	FreeIdentifier[] ident;
-	IParseResult parseResult;
-
+	
 
 	
 	@Override
 	public void run(org.eclipse.jface.action.IAction arg0) {
 		System.out.println("Contract Generator Plug-in Started...");
+		
 		
 		
 		ArrayList<String> variables = getVariables();

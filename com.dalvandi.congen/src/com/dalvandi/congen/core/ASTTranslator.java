@@ -23,6 +23,10 @@ public class ASTTranslator {
 				isType = type;
 			
 			}
+
+		public TranslationRules() {
+			// TODO Auto-generated constructor stub
+		}
 			
 		}
 	public static final int IDENTIFIER = 0;
@@ -34,7 +38,9 @@ public class ASTTranslator {
 	public static final int BINARYEXPRESSION = 5;
 	public static final int ASSOCIATIVEEXPRESSION = 6;
 	public static final int TYPE = 7;
+	public static final int ARG = 8;
 	protected HashMap<Integer, TranslationRules> translation_map; 
+	protected HashMap<Integer, TranslationRules> translation_nmap; 
 	protected HashMap<String, TranslationRules> translation_extended; 
 
 
@@ -45,7 +51,7 @@ public class ASTTranslator {
 		translation_map.put(1, new TranslationRules(IDENTIFIER,0,"",false));
 		translation_map.put(4, new TranslationRules(LITERAL,0,"",false));
 		translation_map.put(107, new TranslationRules(MATHOPERATOR,0,"type( : )#nontype( in )",false)); //∈
-		translation_map.put(111, new TranslationRules(MATHOPERATOR,0,"type( set<arg1> )#nontype( <= )",false)); //<=
+		translation_map.put(111, new TranslationRules(MATHOPERATOR,0,"<=",false)); //<=
 		translation_map.put(108, new TranslationRules(MATHOPERATOR,0," !in ",false)); //∈
 		translation_map.put(101, new TranslationRules(MATHOPERATOR,0,"==",false)); // =
 		translation_map.put(401, new TranslationRules(TYPE,0,"int",true)); // ℤ
@@ -82,97 +88,168 @@ public class ASTTranslator {
 		translation_extended.put("seqSliceFromN", new TranslationRules(EXTENDEDOPERATOR,2,"arg1[arg2..]",false));
 		translation_extended.put("seqConcat", new TranslationRules(EXTENDEDOPERATOR,2,"arg1 + arg2",false));
 		translation_extended.put("seqPrepend", new TranslationRules(EXTENDEDOPERATOR,2,"[arg2] + arg1",false));
+		
+				
+		translation_nmap = new HashMap<Integer, TranslationRules>();
+		
+		translation_nmap.put(1, new TranslationRules(IDENTIFIER,0,"",false));
+		translation_nmap.put(2, new TranslationRules(IDENTIFIER,0,"",false));
+		translation_nmap.put(4, new TranslationRules(LITERAL,0,"",false));
+		translation_nmap.put(5, new TranslationRules(EXTENDEDOPERATOR,0,"{arg1}",false));
+		translation_nmap.put(6, new TranslationRules(MATHOPERATOR,0," := ",false)); // Assignment
+		translation_nmap.put(306, new TranslationRules(MATHOPERATOR,0," + ",false)); // Sum
+		translation_nmap.put(307, new TranslationRules(MATHOPERATOR,0," * ",false)); // Product
+		translation_nmap.put(222, new TranslationRules(MATHOPERATOR,0," - ",false)); // Minus
+		translation_nmap.put(223, new TranslationRules(MATHOPERATOR,0," / ",false)); // Quotient
+		translation_nmap.put(224, new TranslationRules(MATHOPERATOR,0," % ",false)); // Remainder
+		translation_nmap.put(103, new TranslationRules(MATHOPERATOR,0," < ",false)); // Less Than
+		translation_nmap.put(104, new TranslationRules(MATHOPERATOR,0," <= ",false)); // Less or Equal
+		translation_nmap.put(105, new TranslationRules(MATHOPERATOR,0," > ",false)); // Greater
+		translation_nmap.put(106, new TranslationRules(MATHOPERATOR,0," >= ",false)); // Greater or Equal
+		translation_nmap.put(405, new TranslationRules(MATHOPERATOR,0," true ",false)); // True
+		translation_nmap.put(406, new TranslationRules(MATHOPERATOR,0," false ",false)); // False
+		translation_nmap.put(351, new TranslationRules(MATHOPERATOR,0," && ",false)); // Conjunction
+		translation_nmap.put(352, new TranslationRules(MATHOPERATOR,0," || ",false)); // Disjunction
+		translation_nmap.put(251, new TranslationRules(MATHOPERATOR,0," ==> ",false)); // Implication
+		translation_nmap.put(252, new TranslationRules(MATHOPERATOR,0," <==> ",false)); // Equivalence
+		translation_nmap.put(701, new TranslationRules(MATHOPERATOR,0," ! ",false)); // Negation
+		translation_nmap.put(851, new TranslationRules(EXTENDEDOPERATOR,0,"forall arg1 :: arg2",false)); // For all		//TODO
+		translation_nmap.put(852, new TranslationRules(EXTENDEDOPERATOR,0,"exists arg1 :: arg2",false)); // Exists		//TODO
+		translation_nmap.put(101, new TranslationRules(MATHOPERATOR,0," == ",false)); // Equality
+		translation_nmap.put(102, new TranslationRules(MATHOPERATOR,0," != ",false)); // Inequality
+		translation_nmap.put(407, new TranslationRules(MATHOPERATOR,0," {} ",false)); // Empty set		// what about sequences???
+		translation_nmap.put(803, new TranslationRules(MATHOPERATOR,0," ! ",false)); // Set comprehension
+		translation_nmap.put(301, new TranslationRules(MATHOPERATOR,0," + ",false)); // Union
+		translation_nmap.put(302, new TranslationRules(MATHOPERATOR,0," * ",false)); // Intersection
+		translation_nmap.put(213, new TranslationRules(MATHOPERATOR,0," - ",false)); // Difference
+		translation_nmap.put(302, new TranslationRules(MATHOPERATOR,0," * ",false)); // Intersection
+		translation_nmap.put(107, new TranslationRules(MATHOPERATOR,0,"type( : )#nontype( in )",false)); // Membership // what about typing
+		translation_nmap.put(108, new TranslationRules(MATHOPERATOR,0," !in ",false)); // Not Member
+		translation_nmap.put(109, new TranslationRules(MATHOPERATOR,0," < ",false)); // proper subset // what about typing
+		translation_nmap.put(110, new TranslationRules(EXTENDEDOPERATOR,0,"!(arg1 < arg2)",false)); // Not proper subset // what about typing
+		translation_nmap.put(111, new TranslationRules(MATHOPERATOR,0," <=  ",false)); // Subset
+		translation_nmap.put(112, new TranslationRules(EXTENDEDOPERATOR,0,"!(arg1 <= arg2)",false)); // Not Subset // what about typing
+		translation_nmap.put(751, new TranslationRules(EXTENDEDOPERATOR,0,"|arg1|",false)); // Set cardinality
+		translation_nmap.put(221, new TranslationRules(EXTENDEDOPERATOR,0,"(set k0| arg1<=k0 && k0<arg2)",false)); // Up to
+		translation_nmap.put(201, new TranslationRules(EXTENDEDOPERATOR,0,"arg1:=arg2",false)); // Maps to
+		translation_nmap.put(226, new TranslationRules(EXTENDEDOPERATOR,0,"arg1[arg2]",false)); // FunImage
+		translation_nmap.put(757, new TranslationRules(EXTENDEDOPERATOR,2,"arg1",false)); //ran(arg) only if arg is a sequence
+		translation_nmap.put(305, new TranslationRules(EXTENDEDOPERATOR,2,"arg1[arg2]",false)); //override op only if arg is a sequence
+		translation_nmap.put(9996, new TranslationRules(MATHOPERATOR,0,",",false)); // comma
+		translation_nmap.put(9111, new TranslationRules(EXTENDEDOPERATOR,0,"arg1 : set<arg2>",false)); // Set typing
+
+		
+
 	}
 	
 	
 	String translateASTTree(ASTTreeNode root)
 	{
 			String translation = "";
-			translation = translateNodeToDafny(root);
+			translation = toDafny(root);
 			return translation;
 	}
 	
-	
-	private String translateNodeToDafny(ASTTreeNode node) {
 
-		TranslationRules rule = (TranslationRules) translation_map.get(node.tag);
+	
+	private String toDafny(ASTTreeNode node)
+	{
+		TranslationRules rule = selectTrRule(node);
 		
-		if(rule != null){
-		if(rule.nodetype == IDENTIFIER || rule.nodetype == LITERAL)
+		
+		if(rule != null)
+		{
+			if(rule.nodetype == IDENTIFIER || rule.nodetype == LITERAL)
 			{
 				return node.content;
 			}
-		else if(rule.nodetype == TYPE)
-			return  translation_map.get(node.tag).translation;
-		else if(rule.nodetype == MATHOPERATOR || rule.nodetype == EXTENDEDOPERATOR)
-			return  translateOperator(node, rule);
-		else
-			return " ND:" + node.tag + " ";
+			else if(rule.nodetype == TYPE)
+			{
+				return selectTrRule(node).translation;
+			}
+			
+			else if(rule.nodetype == MATHOPERATOR)
+			{
+				return  translateOpToDafny(node, rule);
+			}
+		
+			else if(rule.nodetype == EXTENDEDOPERATOR)
+			{
+				return  translateExpToDafny(node, rule);
+			}
+		
 		}
 		else
-			return " ND:" + node.tag + " ";
+		{
+			return "ND: [" + node.tag + "]";
+		}
+		return "";
+	}
 
-
-
-
-
+	protected String translateExpToDafny(ASTTreeNode node, TranslationRules rule) 
+	{
+		String translation = "";
+		int i = 0;
+		String[] args = new String[node.children.size()];
+		for(ASTTreeNode n : node.children)
+		{
+			args[i] = toDafny(n);
+			i++;
+		}
+	
+		translation = replaceArguments(args, rule.translation);
+		return translation;
 	}
 
 
-	private String translateOperator(ASTTreeNode node, TranslationRules rule) {
+	
+	protected String translateOpToDafny(ASTTreeNode node, TranslationRules rule) {
 		String translation = "";
 
-		if(rule.nodetype == MATHOPERATOR)
+		if(node.children.isEmpty()) //??? not sure about !node.
 		{
-			if(node.children.isEmpty()) //??? not sure about !node.
-			{
-				//translation = translation + translation_map.get(node.tag).translation;
-				return translation;
-			}
-			
-		for(ASTTreeNode n: node.children){
-			translation = translation + translateNodeToDafny(n);
-			
+			//translation = translation + translation_map.get(node.tag).translation;
+			return translation;
+		}
+		else
+		for(ASTTreeNode n: node.children)
+		{
+			translation = translation + toDafny(n);
 			int i = 0;
 			if(!node.children.get(node.children.size()-1).equals(n)) // if n is not the last node in children list
 			{
 				
-				if(!translation_map.get(node.tag).translation.contains("type")) // if the translation rule have just one translation
-					translation = translation + translation_map.get(node.tag).translation;
+				if(!selectTrRule(node).translation.contains("type")) // if the translation rule have just one translation
+					translation = translation + selectTrRule(node).translation;
 				else
 				{
-					if(translation_map.get(node.children.get(i+1).tag).isType || node.children.get(i+1).isType)
+					
+					if(selectTrRule(node.children.get(i+1)).isType || node.children.get(i+1).isType)
 					{
-						String tr = selectTranslation(translation_map.get(node.tag).translation, true);
-						translation = translation + tr;
-
+						if(!selectTrRule(node).translation.contains("arg"))
+							{String tr = selectTranslation(selectTrRule(node).translation, true);
+							translation = translation + tr;
+							}
+						else
+							{
+							translation = translation + "ridi";
+							}
 					}
 					else
 					{
-						String tr = selectTranslation(translation_map.get(node.tag).translation, false);
+						String tr = selectTranslation(selectTrRule(node).translation, false);
 						translation = translation + tr;
 					}
 				}
 				
 				i++;
 			}
-		}
-
-		}
-		else if(rule.nodetype == EXTENDEDOPERATOR)
-		{	
-			int i = 0;
-			String[] args = new String[node.children.size()];
-			for(ASTTreeNode n : node.children)
-			{
-				args[i] = translateNodeToDafny(n);
-				i++;
-			}
-			translation = replaceArguments(args, rule.translation);
-		}
-			return translation;
+		}	
+		return translation;
 	}
 
+
+	
 
 	protected String selectTranslation(String translation, boolean b) {
 		
@@ -210,7 +287,6 @@ public class ASTTranslator {
 
 
 	protected String replaceArguments(String[] args, String translation) {
-		// TODO Auto-generated method stub
 		for(int i = 0 ; i <args.length; i++)
 		{
 			String arg = "arg"+(i+1);
@@ -220,5 +296,22 @@ public class ASTTranslator {
 		return translation;
 	}
 
+	
+	protected TranslationRules selectTrRule(ASTTreeNode node)
+	{
+		TranslationRules rule = new TranslationRules();
+		
+		if(node.tag == 99999)
+		{
+			rule = (TranslationRules) translation_extended.get(node.content);
+		}
+		else
+		{
+			rule = (TranslationRules) translation_nmap.get(node.tag);
+		}
+		
+		return rule;
+		
+	}
 
 }

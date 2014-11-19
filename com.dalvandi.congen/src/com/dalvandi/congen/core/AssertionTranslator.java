@@ -1,77 +1,86 @@
 package com.dalvandi.congen.core;
 
 
-
 public class AssertionTranslator extends ASTTranslator {
 
 	
 	String translateASTTree(ASTTreeNode root)
 	{
 			String translation = "";
-			translation = translateNodeToDafny(root);
+			translation = toDafny(root);
 			return translation;
 	}
 	
 	
-	private String translateNodeToDafny(ASTTreeNode node) {
-
-		TranslationRules rule = (TranslationRules) translation_map.get(node.tag);
-		if(rule != null){
-		if(rule.nodetype == IDENTIFIER || rule.nodetype == LITERAL)
+	private String toDafny(ASTTreeNode node)
+	{
+		TranslationRules rule = selectTrRule(node);
+		
+		
+		if(rule != null)
+		{
+			if(rule.nodetype == IDENTIFIER || rule.nodetype == LITERAL)
 			{
-			if(node.isOld)
-				return "old("+node.content+")";
-			else
-				return node.content;
+				if(node.isOld)
+					return "old("+node.content+")";
+				else
+					return node.content;
 			}
-		else if(rule.nodetype == TYPE)
-			return  translation_map.get(node.tag).translation;
-		else if(rule.nodetype == MATHOPERATOR || rule.nodetype == EXTENDEDOPERATOR)
-			return  translateOperator(node, rule);
-		else
-			return " ND:" + node.tag + " ";
+			else if(rule.nodetype == TYPE)
+			{
+				return selectTrRule(node).translation;
+			}
+			
+			else if(rule.nodetype == MATHOPERATOR)
+			{
+				return  translateAssertionOpToDafny(node, rule);
+			}
+		
+			else if(rule.nodetype == EXTENDEDOPERATOR)
+			{
+				return  translateAssertionExtToDafny(node, rule);
+			}
+		
 		}
 		else
-			return " ND:" + node.tag + " ";
-
-
-
-
-
+		{
+			return "ND: [" + node.tag + "]";
+		}
+		return "";
 	}
 
 
-	private String translateOperator(ASTTreeNode node, TranslationRules rule) {
+
+	private String translateAssertionOpToDafny(ASTTreeNode node, TranslationRules rule)
+	{
 		String translation = "";
 
-		if(rule.nodetype == MATHOPERATOR)
-		{
 			if(node.children.isEmpty())
 			{
-				translation = translation + translation_map.get(node.tag).translation;
+				translation = translation + selectTrRule(node).translation;
 				return translation;
 			}
 			else{	
 			for(ASTTreeNode n: node.children){
-				translation = translation + translateNodeToDafny(n);
+				translation = translation + toDafny(n);
 				
 				int i = 0;
 				if(!node.children.get(node.children.size()-1).equals(n))
 				{
 					
-					if(!translation_map.get(node.tag).translation.contains("type"))
-						translation = translation + translation_map.get(node.tag).translation;
+					if(!selectTrRule(node).translation.contains("type"))
+						translation = translation + selectTrRule(node).translation;
 					else
 					{
-						if(translation_map.get(node.children.get(i+1).tag).isType || node.children.get(i+1).isType)
+						if(selectTrRule(node.children.get(i+1)).isType || node.children.get(i+1).isType)
 						{
-							String tr = selectTranslation(translation_map.get(node.tag).translation, true);
+							String tr = selectTranslation(selectTrRule(node).translation, true);
 							translation = translation + tr;
 	
 						}
 						else
 						{
-							String tr = selectTranslation(translation_map.get(node.tag).translation, false);
+							String tr = selectTranslation(selectTrRule(node).translation, false);
 							translation = translation + tr;
 						}
 					}
@@ -80,23 +89,24 @@ public class AssertionTranslator extends ASTTranslator {
 				}
 			}
 			}
-		}
-		else if(rule.nodetype == EXTENDEDOPERATOR)
-		{	
-			int i = 0;
-			String[] args = new String[node.children.size()];
-			for(ASTTreeNode n : node.children)
-			{
-				args[i] = translateNodeToDafny(n);
-				i++;
-			}
-			translation = replaceArguments(args, rule.translation);
-		}
 			return translation;
 	}
-
-
-
-
 	
+	
+	
+	private String translateAssertionExtToDafny(ASTTreeNode node, TranslationRules rule) {
+		String translation = "";
+		int i = 0;
+		String[] args = new String[node.children.size()];
+		for(ASTTreeNode n : node.children)
+		{
+			args[i] = toDafny(n);
+			i++;
+		}
+		translation = replaceArguments(args, rule.translation);
+	
+		return translation;
+	}
+
 }
+

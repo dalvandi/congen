@@ -34,13 +34,15 @@ public class Invariants{
 
 	private boolean isTypingTree(ASTTreeNode node, ArrayList<String> vars, ArrayList<String> types) {
 
-		if(node.tag != 107 )
+		Types t = new Types(); 
+
+		if(node.tag != 107  && node.tag != 111) //????)
 			return false;
 		else 
 		{
 			if(vars.contains(node.children.get(0).content))
 					{
-					if(types.contains(node.children.get(1).content) || node.children.get(1).tag == 401 ||  node.children.get(1).tag == 1001)
+					if(types.contains(node.children.get(1).content) || t.builtin_types.contains(node.children.get(1).tag) ||  t.extended_types.contains(node.children.get(1).content))
 					{
 						return true;
 					}
