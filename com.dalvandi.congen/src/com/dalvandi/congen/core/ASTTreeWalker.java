@@ -1,22 +1,34 @@
 package com.dalvandi.congen.core;
 
-import com.dalvandi.congen.*;
 import com.dalvandi.congen.core.ASTTreeNode;
 
-import java.util.Stack;
+//import java.util.Stack;
 
 public class ASTTreeWalker {
-	private Stack<ASTTreeNode> nodestack;
-	private String treetext;
-	private String btreetext;
+//	private Stack<ASTTreeNode> nodestack;
+	//private String treetext;
+	//private String btreetext;
 	private ASTTreeNode node;
 	
 	protected ASTTreeWalker()
 	{
-		nodestack = new Stack<ASTTreeNode>();
-		treetext = "Tree Text: ";
-		btreetext = "Binary Tree Text: ";
+		//nodestack = new Stack<ASTTreeNode>();
+		//treetext = "Tree Text: ";
+		//btreetext = "Binary Tree Text: ";
 		node = null;
+	}
+	
+	int treeNodeCounter(ASTTreeNode root)
+	{
+		int thisnode = root.children.size();
+		
+		for (ASTTreeNode n: root.children)
+		{
+			thisnode += treeNodeCounter(n);
+		}
+		
+		return thisnode;
+		
 	}
 	
 	void treePrinter(ASTTreeNode root)

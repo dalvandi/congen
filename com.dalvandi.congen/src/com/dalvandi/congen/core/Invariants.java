@@ -52,4 +52,30 @@ public class Invariants{
 		return false;
 			
 	}
+
+
+
+
+	public ASTTreeNode getInvariantsNode(IMachineRoot mch,
+			ArrayList<String> vars, ArrayList<String> types) throws RodinDBException {
+		
+		ASTBuilder itb = new ASTBuilder(vars, types);
+		ASTTreeNode invs = new ASTTreeNode("Invariants","Invariants", 9521);
+		ASTTreeNode and = new ASTTreeNode("And","&&", 351);
+		invs.addNewChild(and);
+		
+		for(IInvariant inv : mch.getInvariants())
+		{
+			if(!isTypingTree(itb.treeBuilder(inv.getPredicateString(), mch), vars, types))
+			{
+				ASTTreeNode inva = new ASTTreeNode("Invariant","Inv", 9545);
+				ASTTreeNode n = itb.treeBuilder(inv.getPredicateString(), mch);
+				inva.addNewChild(n);
+				and.addNewChild(inva);
+			}
+
+		}
+		
+		return invs;
+	}
 }

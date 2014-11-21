@@ -4,13 +4,12 @@ import java.util.ArrayList;
 
 import org.eventb.core.IEvent;
 import org.eventb.core.IMachineRoot;
-import org.eventb.core.IVariable;
 import org.rodinp.core.RodinDBException;
 
 public class ContractGenerator {
 	
 	private static IMachineRoot machine;
-	private static String method_name;
+	//private static String method_name;
 	private static ArrayList<String> parameters;
 	private static ArrayList<String> events;
 	private static ArrayList<String> variables;
@@ -19,7 +18,7 @@ public class ContractGenerator {
 		public ContractGenerator(IMachineRoot mch, ArrayList<String> vars, ArrayList<String> t, String method, ArrayList<String> par, ArrayList<String> evts)
 		{
 			machine = mch;
-			method_name = method;
+			//method_name = method;
 			parameters = par;
 			events = evts;
 			variables = vars;
@@ -60,6 +59,39 @@ public class ContractGenerator {
 
 			ArrayList<String> postconditions = postConditionGenerator();
 			return postconditions;
+			
+		}
+
+
+		public ASTTreeNode getMethodPostconditionsNode() {
+
+			ASTTreeNode nl = new ASTTreeNode("Next Line", "", 9995);
+			AssertionTreeBuilder pctree = new AssertionTreeBuilder(variables, types);			//Build AST tree for 
+			try {
+				for(IEvent evt: machine.getEvents())
+				{
+					for(String e : events)
+						{
+							if(e.contentEquals(evt.getLabel()))
+								{
+									//pcroot = pctree.postConditionTreeBuilder(machine, parameters,evt);
+									ASTTreeNode post = new ASTTreeNode("Post", "", 9601);
+									post.addNewChild(pctree.postConditionTreeBuilder(machine, parameters,evt));
+									nl.addNewChild(post);
+									//System.out.println("WWWWW");
+								}
+						}
+					
+				}
+			}
+			catch (RodinDBException e)
+				{
+					e.printStackTrace();
+				}
+			
+			return nl;
+			
+
 			
 		}
 	

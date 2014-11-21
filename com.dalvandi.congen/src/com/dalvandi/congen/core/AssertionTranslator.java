@@ -72,6 +72,7 @@ public class AssertionTranslator extends ASTTranslator {
 						translation = translation + selectTrRule(node).translation;
 					else
 					{
+						//System.out.println("Tag: " + node.tag + " Content: " + node.content + " Children Size: " + selectTrRule(node.children.get(i+1)).translation);
 						if(selectTrRule(node.children.get(i+1)).isType || node.children.get(i+1).isType)
 						{
 							String tr = selectTranslation(selectTrRule(node).translation, true);

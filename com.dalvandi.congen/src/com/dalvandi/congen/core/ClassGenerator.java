@@ -38,12 +38,21 @@ public class ClassGenerator {
 
 	public void outputGeneratedClass() throws RodinDBException
 	{
-		String class_decl = getClassDeclartion();
-		ArrayList<String> variables_decl = new VariablesDeclaration().getVariablesDeclaration(machine, variables, types);
-		ArrayList<String> invariants = new Invariants().getInvariants(machine, variables, types);
-		ArrayList<String> methods = new MethodGenerator().getMethods(machine, variables, types, constructoroperators);
+		//String class_decl = getClassDeclartion();
+		//ArrayList<String> variables_decl = new VariablesDeclaration().getVariablesDeclaration(machine, variables, types);
+		//ArrayList<String> invariants = new Invariants().getInvariants(machine, variables, types);
+		//ArrayList<String> methods = new MethodGenerator().getMethods(machine, variables, types, constructoroperators);
 		
+		//*******Build Tree for Class*********
+		ASTTreeNode class_node = getClassNode();
+		class_node.addNewChild(getClassBodyNode());
+		 
+		AssertionTranslator tr = new AssertionTranslator();
+		System.out.println(tr.translateASTTree(class_node));
 		
+		//*******Build Tree for Class*********
+		
+		/* 
 		System.out.println(class_decl + "{");
 		buildDafnyFile(classname, class_decl + "{");
 		for(String s : variables_decl)
@@ -92,7 +101,7 @@ public class ClassGenerator {
 		System.out.println("}");
 	      buildDafnyFile(classname, "}");
 
-		
+	*/	
 
 		
 	}
@@ -101,6 +110,7 @@ public class ClassGenerator {
 	 * This method build a Dafny file containing the generated class 
 	 * 
 	 */
+
 
 	private void buildDafnyFile(String mtdname, String st)
 	{
@@ -146,6 +156,50 @@ public class ClassGenerator {
 						
 	}
 	
+	
+	private ASTTreeNode getClassNode() {
+
+		ASTTreeNode class_node = new ASTTreeNode("Class", "Class", 9500);
+		
+		ASTTreeNode class_name = new ASTTreeNode("Class Name", classname, 9510);
+		class_name.addNewChild(new ASTTreeNode("Class Name", classname, 1));
+	
+		class_node.addNewChild(class_name);
+
+		if(!types.isEmpty())
+		{
+			ASTTreeNode class_generic = new ASTTreeNode("Class Name", classname, 9511);
+			ASTTreeNode genericstree = new ASTTreeNode("coma", ",", 9996);
+		
+			for(String s : types)
+			{
+				genericstree.addNewChild(new ASTTreeNode("FreeIdentifier", s, 1));
+			}
+			
+			class_generic.addNewChild(genericstree);
+			class_node.addNewChild(class_generic);
+			
+			return class_node;
+		}
+		
+		else
+			return class_node;
+						
+	}
+
+
+	private ASTTreeNode getClassBodyNode() throws RodinDBException {
+
+		ASTTreeNode body = new ASTTreeNode("Class Body", "", 9512);
+		ASTTreeNode vars = new VariablesDeclaration().getVariablesNode(machine, variables, types);
+		ASTTreeNode invs = new Invariants().getInvariantsNode(machine, variables, types);
+		ASTTreeNode mtd = new MethodGenerator().getMethodsNode(machine, variables, types, constructoroperators);
+		body.addNewChild(vars);
+		body.addNewChild(invs);
+		body.addNewChild(mtd);
+		
+		return body;
+	}
 	
 	
 }

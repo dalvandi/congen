@@ -133,4 +133,69 @@ public class MethodGenerator {
 		}
 
 	}
+
+	public ASTTreeNode getMethodsNode(IMachineRoot mch, ArrayList<String> vars,ArrayList<String> types, ArrayList<String> constat) throws RodinDBException {
+
+		ASTTreeNode methods = new ASTTreeNode("Methods", "", 9522);
+		for(String s : constat)
+		{	
+			
+			String mtdname = getMethodName(s);
+			ArrayList<String> metpar = getMethodParameters(s);
+			ArrayList<String> events = getMethodEvents(s);
+			ASTTreeNode mtd = getMethodNode(mch, vars, types, mtdname, metpar, events);
+			methods.addNewChild(mtd);
+
+		}
+		
+		
+		return methods;
+	}
+	
+	private ASTTreeNode getMethodNode(IMachineRoot mch, ArrayList<String> vars, ArrayList<String> types, String methodname, ArrayList<String> metpar, ArrayList<String> events) throws RodinDBException 
+	{
+		
+		ASTTreeNode mtd = new ASTTreeNode("Method", "", 9530);
+		
+		ASTTreeNode mtdname = new ASTTreeNode("Method Name", "", 9540);
+		mtdname.addNewChild(new ASTTreeNode("Method Name", methodname, 1));
+		
+		ASTTreeNode mtdargs = new ASTTreeNode("Method Name", "", 9541);
+		mtdargs.addNewChild(getMethodArgsNode(mch,methodname, metpar, events,vars, types));
+		
+		ASTTreeNode precondition = new ASTTreeNode("Method Precondition", "", 9542); //
+		
+		ContractGenerator methodpostcondition = new ContractGenerator(mch, vars, types, methodname, metpar, events);
+		methodpostcondition.getMethodPostconditionsNode();
+		ASTTreeNode postcondition = new ASTTreeNode("Method Precondition", "", 9543);
+		postcondition.addNewChild(methodpostcondition.getMethodPostconditionsNode());
+
+		mtd.addNewChild(mtdname);
+		mtd.addNewChild(mtdargs);
+		
+		if(!methodname.equals("Init")){
+			mtd.addNewChild(precondition);
+		}	
+		else
+		{
+			mtd.addNewChild(new ASTTreeNode("Empty", "", 9997));
+		}
+		
+		mtd.addNewChild(postcondition);
+		
+		
+		
+		return mtd;
+	}
+	
+	private ASTTreeNode getMethodArgsNode(IMachineRoot mch,
+			String methodname, ArrayList<String> metpar, ArrayList<String> events,ArrayList<String> vars,ArrayList<String> types) throws RodinDBException {
+
+		AssertionTreeBuilder astTree = new AssertionTreeBuilder(vars, types);
+		String evt = events.get(0);
+		ASTTreeNode methodtypes = astTree.methodTypingTreeBuilder(mch, metpar, evt);
+		
+		return methodtypes;
+	}
+
 }

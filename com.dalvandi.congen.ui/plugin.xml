@@ -11,7 +11,7 @@
       <childRelation
             parentTypeId="org.eventb.core.machineFile">
          <childType
-               priority="65"
+               priority="99"
                typeId="com.dalvandi.congen.constructorstatement">
          </childType>
       </childRelation>

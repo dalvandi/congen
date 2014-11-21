@@ -95,7 +95,7 @@ public class ASTTranslator {
 		translation_nmap.put(1, new TranslationRules(IDENTIFIER,0,"",false));
 		translation_nmap.put(2, new TranslationRules(IDENTIFIER,0,"",false));
 		translation_nmap.put(4, new TranslationRules(LITERAL,0,"",false));
-		translation_nmap.put(5, new TranslationRules(EXTENDEDOPERATOR,0,"{arg1}",false));
+		translation_nmap.put(5, new TranslationRules(EXTENDEDOPERATOR,0,"arg1",false)); //Set
 		translation_nmap.put(6, new TranslationRules(MATHOPERATOR,0," := ",false)); // Assignment
 		translation_nmap.put(306, new TranslationRules(MATHOPERATOR,0," + ",false)); // Sum
 		translation_nmap.put(307, new TranslationRules(MATHOPERATOR,0," * ",false)); // Product
@@ -117,7 +117,7 @@ public class ASTTranslator {
 		translation_nmap.put(852, new TranslationRules(EXTENDEDOPERATOR,0,"exists arg1 :: arg2",false)); // Exists		//TODO
 		translation_nmap.put(101, new TranslationRules(MATHOPERATOR,0," == ",false)); // Equality
 		translation_nmap.put(102, new TranslationRules(MATHOPERATOR,0," != ",false)); // Inequality
-		translation_nmap.put(407, new TranslationRules(MATHOPERATOR,0," {} ",false)); // Empty set		// what about sequences???
+		translation_nmap.put(407, new TranslationRules(MATHOPERATOR,0," [] ",false)); // Empty set		// what about sequences???
 		translation_nmap.put(803, new TranslationRules(MATHOPERATOR,0," ! ",false)); // Set comprehension
 		translation_nmap.put(301, new TranslationRules(MATHOPERATOR,0," + ",false)); // Union
 		translation_nmap.put(302, new TranslationRules(MATHOPERATOR,0," * ",false)); // Intersection
@@ -128,6 +128,7 @@ public class ASTTranslator {
 		translation_nmap.put(109, new TranslationRules(MATHOPERATOR,0," < ",false)); // proper subset // what about typing
 		translation_nmap.put(110, new TranslationRules(EXTENDEDOPERATOR,0,"!(arg1 < arg2)",false)); // Not proper subset // what about typing
 		translation_nmap.put(111, new TranslationRules(MATHOPERATOR,0," <=  ",false)); // Subset
+		translation_nmap.put(9111, new TranslationRules(EXTENDEDOPERATOR,0,"arg1 : set<arg2>",false)); // Set typing
 		translation_nmap.put(112, new TranslationRules(EXTENDEDOPERATOR,0,"!(arg1 <= arg2)",false)); // Not Subset // what about typing
 		translation_nmap.put(751, new TranslationRules(EXTENDEDOPERATOR,0,"|arg1|",false)); // Set cardinality
 		translation_nmap.put(221, new TranslationRules(EXTENDEDOPERATOR,0,"(set k0| arg1<=k0 && k0<arg2)",false)); // Up to
@@ -135,10 +136,37 @@ public class ASTTranslator {
 		translation_nmap.put(226, new TranslationRules(EXTENDEDOPERATOR,0,"arg1[arg2]",false)); // FunImage
 		translation_nmap.put(757, new TranslationRules(EXTENDEDOPERATOR,2,"arg1",false)); //ran(arg) only if arg is a sequence
 		translation_nmap.put(305, new TranslationRules(EXTENDEDOPERATOR,2,"arg1[arg2]",false)); //override op only if arg is a sequence
+
+		translation_nmap.put(9990, new TranslationRules(MATHOPERATOR,0,"ND",false)); // Next line
+		translation_nmap.put(9995, new TranslationRules(MATHOPERATOR,0,"\n",false)); // Next line
 		translation_nmap.put(9996, new TranslationRules(MATHOPERATOR,0,",",false)); // comma
-		translation_nmap.put(9111, new TranslationRules(EXTENDEDOPERATOR,0,"arg1 : set<arg2>",false)); // Set typing
+		translation_nmap.put(9997, new TranslationRules(MATHOPERATOR,0,"",false)); // Empty Node
+		
+		
+		translation_nmap.put(9500, new TranslationRules(EXTENDEDOPERATOR,0,"class arg1<arg2>\narg3\n",false)); // Class
+		translation_nmap.put(9510, new TranslationRules(EXTENDEDOPERATOR,0,"arg1",false)); // Class Name
+		translation_nmap.put(9511, new TranslationRules(MATHOPERATOR,0,"",false)); // Class Generic
+		translation_nmap.put(9512, new TranslationRules(EXTENDEDOPERATOR,0,"{\n\narg1\narg2\narg3\n}",false)); // Class Body
+		translation_nmap.put(9520, new TranslationRules(MATHOPERATOR,0,"",false)); // Class Variables
+		translation_nmap.put(9531, new TranslationRules(EXTENDEDOPERATOR,0,"ghost var arg1;\n",false)); // Ghost Variable
+		translation_nmap.put(9521, new TranslationRules(EXTENDEDOPERATOR,0,"predicate Valid()\nreads this;\n{\narg1\n}",false)); // Class Invariants //TODO: Add a next line node
+		translation_nmap.put(9522, new TranslationRules(MATHOPERATOR,0,"",false)); // Class Methods
+		translation_nmap.put(9530, new TranslationRules(EXTENDEDOPERATOR,0,"\n\nmethod arg1(arg2)\nmodifies this;\narg3arg4",false)); // Method
+		translation_nmap.put(9540, new TranslationRules(MATHOPERATOR,0,"",false)); // Method Name
+		translation_nmap.put(9541, new TranslationRules(MATHOPERATOR,0,"",false)); // Method Arguments
+		translation_nmap.put(9542, new TranslationRules(MATHOPERATOR,0,"requires Valid();\n",false)); // Method Preconditions
+		translation_nmap.put(9543, new TranslationRules(EXTENDEDOPERATOR,0,"ensures Valid();\narg1",false)); // Method Postconditions
+		translation_nmap.put(9544, new TranslationRules(MATHOPERATOR,0,"",false)); // Method Body
+		translation_nmap.put(9545, new TranslationRules(EXTENDEDOPERATOR,0,"arg1\n",false)); // Invariant next line
+		translation_nmap.put(9600, new TranslationRules(EXTENDEDOPERATOR,0,"requires arg1;",false)); // Pre-condition
+		translation_nmap.put(9601, new TranslationRules(EXTENDEDOPERATOR,0,"ensures arg1;",false)); // Post-condition
+
+
 
 		
+
+
+
 
 	}
 	
@@ -308,6 +336,10 @@ public class ASTTranslator {
 		else
 		{
 			rule = (TranslationRules) translation_nmap.get(node.tag);
+			if(rule == null)
+			{
+				rule = translation_nmap.get(9990);
+			}
 		}
 		
 		return rule;

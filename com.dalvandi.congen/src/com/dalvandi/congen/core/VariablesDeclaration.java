@@ -38,6 +38,38 @@ public class VariablesDeclaration {
 		
 	}
 
+	
+	
+	/*
+	 * This method returns the root node of variables tree.
+	 * Its arguments are (machine, list of variables, list of types(carrier sets))  
+	 * 
+	 */
+
+	public ASTTreeNode getVariablesNode(IMachineRoot mch, ArrayList<String> vars, ArrayList<String> types) throws RodinDBException
+	{
+		ASTBuilder itb = new ASTBuilder(vars, types);
+		ASTTreeNode vars_dec = new ASTTreeNode("Class Variables", "", 9520);
+		for(IInvariant inv : mch.getInvariants())
+		{
+			if(isTypingTree(itb.treeBuilder(inv.getPredicateString(), mch), vars, types))
+			{
+				ASTTreeNode v = new ASTTreeNode("Variable", "", 9531);
+				ASTTreeNode n = itb.treeBuilder(inv.getPredicateString(), mch); 
+				if(n.tag == 111)
+					n.tag = 9111;
+				n.children.get(1).isType = true;
+				v.addNewChild(n);
+				vars_dec.addNewChild(v);
+				
+			}
+		}
+		
+		return vars_dec;
+		
+	}
+	
+	
 	private boolean isTypingTree(ASTTreeNode node, ArrayList<String> vars, ArrayList<String> types) {
 		Types t = new Types(); 
 		

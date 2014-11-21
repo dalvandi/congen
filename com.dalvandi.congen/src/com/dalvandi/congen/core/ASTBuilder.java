@@ -13,7 +13,6 @@
 package com.dalvandi.congen.core;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 import org.eventb.core.IMachineRoot;
 import org.eventb.core.ast.Assignment;
@@ -25,7 +24,6 @@ import org.eventb.core.ast.BecomesSuchThat;
 import org.eventb.core.ast.BinaryExpression;
 import org.eventb.core.ast.BinaryPredicate;
 import org.eventb.core.ast.BoundIdentDecl;
-import org.eventb.core.ast.BoundIdentifier;
 import org.eventb.core.ast.Expression;
 import org.eventb.core.ast.ExtendedExpression;
 import org.eventb.core.ast.Formula;
@@ -37,6 +35,7 @@ import org.eventb.core.ast.Predicate;
 import org.eventb.core.ast.QuantifiedPredicate;
 import org.eventb.core.ast.RelationalPredicate;
 import org.eventb.core.ast.SetExtension;
+import org.eventb.core.ast.SimplePredicate;
 import org.eventb.core.ast.UnaryExpression;
 
 public class ASTBuilder {
@@ -80,7 +79,8 @@ public class ASTBuilder {
 		else
 		{
 			inputFormula = parseResult.getParsedExpression();
-			System.out.println("Not implemented yet!");
+			root = buildExpressionTree((Expression) inputFormula);
+			//System.out.println("Not implemented yet!" + inputFormula.toString());
 
 		}
 		return root;
@@ -130,9 +130,17 @@ public class ASTBuilder {
 				predicateRoot.addNewChild(treeBuilder(p.toString(), machine));
 			}
 		}
+		else if(in instanceof SimplePredicate)
+		{
+			predicateRoot = new ASTTreeNode(in.getClass().getSimpleName(), in.toString(), in.getTag());
+			for(int i = 0; i < in.getChildCount(); i++)
+			{
+				predicateRoot.addNewChild(treeBuilder(((SimplePredicate) in).getChild(i).toString(), machine));
+			}
+		}
 		else
 		{
-			System.out.println("Ridi : " + in.getClass().getSimpleName());
+			System.out.println("Ridi : " + in.getSyntaxTree() + in.getTag());//getClass().getSimpleName());
 		}
 		return predicateRoot;
 	}
@@ -222,7 +230,8 @@ public class ASTBuilder {
 
 			for(Expression e_ch : exp_child)
 			{
-				associ_exp.addNewChild(buildExpressionTree(e_ch));
+				//associ_exp.addNewChild(buildExpressionTree(e_ch));
+				associ_exp.addNewChild(treeBuilder(e_ch.toString(), machine));
 									
 			}
 		
@@ -233,8 +242,10 @@ public class ASTBuilder {
 		{
 			ASTTreeNode bi_exp = new ASTTreeNode(e.getClass().getSimpleName(), e.toString(), e.getTag());
 			
-			bi_exp.addNewChild(buildExpressionTree(((BinaryExpression) e).getLeft()));
-			bi_exp.addNewChild(buildExpressionTree(((BinaryExpression) e).getRight()));
+			//bi_exp.addNewChild(buildExpressionTree(((BinaryExpression) e).getLeft()));
+			bi_exp.addNewChild(treeBuilder(((BinaryExpression) e).getLeft().toString(), machine));
+			//bi_exp.addNewChild(buildExpressionTree(((BinaryExpression) e).getRight()));
+			bi_exp.addNewChild(treeBuilder(((BinaryExpression) e).getRight().toString(), machine));
 	
 			return bi_exp;
 
@@ -250,7 +261,8 @@ public class ASTBuilder {
 			
 			for(Expression e_ch : exp_child)
 			{
-				extended_exp.addNewChild(buildExpressionTree(e_ch));
+				//extended_exp.addNewChild(buildExpressionTree(e_ch));
+				extended_exp.addNewChild(treeBuilder(e_ch.toString(),machine));
 									
 			}
 	
@@ -261,7 +273,8 @@ public class ASTBuilder {
 		else if(e instanceof UnaryExpression)
 		{
 			ASTTreeNode unary_exp = new ASTTreeNode(e.getClass().getSimpleName(), e.toString(), e.getTag());
-			unary_exp.addNewChild(buildExpressionTree(((UnaryExpression) e).getChild()));
+			//unary_exp.addNewChild(buildExpressionTree(((UnaryExpression) e).getChild()));
+			unary_exp.addNewChild(treeBuilder(((UnaryExpression) e).getChild().toString(), machine));
 			
 			return unary_exp;
 
@@ -274,7 +287,9 @@ public class ASTBuilder {
 			ASTTreeNode comma = new ASTTreeNode("Comma,", ",", 9996);
 			for(Expression s_ch : set_child)
 			{
-				comma.addNewChild(buildExpressionTree(s_ch));
+				//comma.addNewChild(buildExpressionTree(s_ch));
+				comma.addNewChild(treeBuilder(s_ch.toString(),machine));
+				
 			}
 			setex_exp.addNewChild(comma);
 
@@ -283,7 +298,7 @@ public class ASTBuilder {
 		}
 
 
-		
+		System.out.println("Not Defined! It is going to crash :D");
 		return null;
 	}
 	
