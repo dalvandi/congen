@@ -8,6 +8,15 @@ import org.eventb.core.IGuard;
 import org.eventb.core.IMachineRoot;
 import org.eventb.core.IParameter;
 import org.eventb.core.IVariable;
+import org.eventb.core.ast.AssociativePredicate;
+import org.eventb.core.ast.Expression;
+import org.eventb.core.ast.FormulaFactory;
+import org.eventb.core.ast.FreeIdentifier;
+import org.eventb.core.ast.IParseResult;
+import org.eventb.core.ast.LanguageVersion;
+import org.eventb.core.ast.Predicate;
+import org.rodinp.core.IAttributeValue;
+import org.rodinp.core.IRodinElement;
 import org.rodinp.core.RodinDBException;
 
 public class AssertionTreeBuilder extends ASTBuilder {
@@ -30,7 +39,7 @@ public class AssertionTreeBuilder extends ASTBuilder {
 	 * 
 	 * This method builds a post-condition tree driven from event evt.  
 	 * */
-	ASTTreeNode postConditionTreeBuilder(IMachineRoot mch, ArrayList<String> mtdpar, IEvent evt) throws RodinDBException
+	ASTTreeNode postConditionTreeBuilder(IMachineRoot mch, ArrayList<String> mtdpar, ArrayList<String> mtdpar_out, IEvent evt) throws RodinDBException
 	{
 		ASTTreeNode pcroot;
 		
@@ -42,8 +51,13 @@ public class AssertionTreeBuilder extends ASTBuilder {
 			
 			for(IGuard grd: evt.getGuards())
 			{
-				grds.addNewChild(this.treeBuilder(grd.getPredicateString(), mch));
+				if(guardContainsOutParam(grd,mtdpar_out,mch))
+					grds.addNewChild(this.treeBuilder(grd.getPredicateString(), mch));
+				else
+					acts.addNewChild(this.treeBuilder(grd.getPredicateString(), mch));
+
 			}
+		
 			for(IAction act: evt.getActions())
 			{
 				acts.addNewChild(this.treeBuilder(act.getAssignmentString(), mch));
@@ -63,14 +77,34 @@ public class AssertionTreeBuilder extends ASTBuilder {
 
 		}
 		
-		pcroot = postConditionTreeToTranslatableTree(mch, mtdpar, evt, pcroot);
+		pcroot = postConditionTreeToTranslatableTree(mch, mtdpar, mtdpar_out, evt, pcroot);
 		return pcroot;
 		
 	}
 	
 	
+	private boolean guardContainsOutParam(IGuard grd, ArrayList<String> mtdpar_out, IMachineRoot mch) throws RodinDBException {
+
+		FormulaFactory ff = mch.getFormulaFactory();
+		IParseResult parseResult = ff.parsePredicate(grd.getPredicateString(), LanguageVersion.LATEST, null);
+		Predicate pr = parseResult.getParsedPredicate();
+				
+		for(FreeIdentifier e :pr.getFreeIdentifiers())
+		{
+			if(mtdpar_out.contains(e.toString()))
+			{
+				return false;
+			}
+		}
+
+		
+		return true;
+	}
+
 	private ASTTreeNode postConditionTreeToTranslatableTree(IMachineRoot mch,
-			ArrayList<String> mtdpar, IEvent evt, ASTTreeNode pcroot) throws RodinDBException {
+			ArrayList<String> mtdpar, ArrayList<String> mtdpar_out, IEvent evt, ASTTreeNode pcroot) 
+					throws RodinDBException {
+		
 		ArrayList<String> variables = new ArrayList<String>();
 		ArrayList<String> parameters = new ArrayList<String>();
 		
@@ -86,8 +120,8 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		}
 		
 		postConditionTreeAddMetaData(pcroot, variables, parameters);
-		postConditionTreeTypingNodeRemover(pcroot,mtdpar);
-		postConditionTreeFindNonMethodParameters(pcroot, mtdpar, parameters);
+		postConditionTreeTypingNodeRemover(pcroot,mtdpar,mtdpar_out);
+		postConditionTreeFindNonMethodParameters(pcroot, mtdpar,mtdpar_out, parameters);
 		pcroot = postConditionTreeAddQuantifyOverParameters(pcroot, mtdpar, parameters);
 		
 		return pcroot;
@@ -117,28 +151,27 @@ public class AssertionTreeBuilder extends ASTBuilder {
 	}
 
 	private void postConditionTreeFindNonMethodParameters(ASTTreeNode node,
-			ArrayList<String> mtdpar, ArrayList<String> parameters) {
-		//
-		
+			ArrayList<String> mtdpar, ArrayList<String> mtdpar_out, ArrayList<String> parameters) {
+		//		
 		
 		ArrayList<String> mtd_par = mtdpar;
 		
-		if(node.isParameter && !mtd_par.contains(node.content) && !quantifierstr.contains(node.content))
+		if(node.isParameter && !mtd_par.contains(node.getContent()) && !mtdpar_out.contains(node.getContent()) &&!quantifierstr.contains(node.getContent()))
 		{
 			quantifiernodes.add(node);
-			quantifierstr.add(node.content);
+			quantifierstr.add(node.getContent());
 		}
 		for(ASTTreeNode n : node.children)
 		{
-			postConditionTreeFindNonMethodParameters(n, mtdpar, parameters);
+			postConditionTreeFindNonMethodParameters(n, mtdpar, mtdpar_out, parameters);
 		}
 		
 	}
 	
 	//TO DO: change the method name to typingNodeRemover
-	private void postConditionTreeTypingNodeRemover(ASTTreeNode pcroot, ArrayList<String> para) {
+	private void postConditionTreeTypingNodeRemover(ASTTreeNode pcroot, ArrayList<String> para, ArrayList<String> para_out) {
 
-		postConditionTreeTypingNodeFinder(pcroot, null, para);
+		postConditionTreeTypingNodeFinder(pcroot, null, para, para_out);
 		ArrayList<ASTTreeNode> temp = new ArrayList<ASTTreeNode>(pcroot.children);
 		
 		for(ASTTreeNode n : pcroot.children)
@@ -153,13 +186,13 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		
 		for(ASTTreeNode n : pcroot.children)
 		{
-			postConditionTreeTypingNodeRemover(n, para);
+			postConditionTreeTypingNodeRemover(n, para, para_out);
 		}
 		
 	}
 
 	//TO DO: rename the method to typingNodeFinder
-	private void postConditionTreeTypingNodeFinder(ASTTreeNode node, ASTTreeNode parent, ArrayList<String> para) { 
+	private void postConditionTreeTypingNodeFinder(ASTTreeNode node, ASTTreeNode parent, ArrayList<String> para, ArrayList<String> para_out) { 
 
 		if(parent != null)
 		{
@@ -167,7 +200,7 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		if(node.tag == 107)
 		{
 
-			if((node.children.get(node.children.size()-1).isType && para.contains(node.children.get(0).content)))
+			if((node.children.get(node.children.size()-1).isType && (para.contains(node.children.get(0).getContent())) || para_out.contains(node.children.get(0).getContent())))
 			{
 				typingnodes.add(node);
 			}
@@ -177,7 +210,7 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		
 		for(ASTTreeNode n : node.children)
 		{
-			postConditionTreeTypingNodeFinder(n , node, para);
+			postConditionTreeTypingNodeFinder(n , node, para, para_out);
 		}
 	}
 	
@@ -191,11 +224,11 @@ public class AssertionTreeBuilder extends ASTBuilder {
 
 		if(node.tag == 1)
 		{
-			if(variables.contains(node.content))
+			if(variables.contains(node.getContent()))
 			{
 				node.isVariable = true;
 			}
-			else if(parameters.contains(node.content))
+			else if(parameters.contains(node.getContent()))
 			{
 				node.isParameter = true;
 			}
@@ -206,7 +239,7 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		if(node.tag == 401 || node.tag == 1001) // what about seq?
 			node.isType = true;
 
-		if(node.tag == 6){ // right handside of assignements should be old
+		if(node.tag == 6 || node.tag == 101){ // right handside of assignements should be old
 			for(int i = 1; i < node.children.size(); i++)
 			{
 				markVariablesOld(node.children.get(i), variables);
@@ -234,7 +267,7 @@ public class AssertionTreeBuilder extends ASTBuilder {
 
 	private void markVariablesOld(ASTTreeNode node, ArrayList<String> variables) {
 	
-		if(variables.contains(node.content))
+		if(variables.contains(node.getContent()))
 			{
 				node.isOld = true;
 			}
@@ -246,7 +279,7 @@ public class AssertionTreeBuilder extends ASTBuilder {
 	}
 
 	public ASTTreeNode methodTypingTreeBuilder(IMachineRoot machine,
-		ArrayList<String> parameters, String evt) throws RodinDBException {
+		ArrayList<String> parameters, ArrayList<String> parameters_out, String evt) throws RodinDBException {
 		ASTTreeNode guardtree = new ASTTreeNode("coma", "," , 9996);
 		IEvent event = null;
 		for(IEvent e : machine.getEvents())
@@ -279,16 +312,16 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		}
 		
 		postConditionTreeAddMetaData(guardtree, variables, params);
-		ASTTreeNode typetree = removeNonTypingNodes(guardtree, parameters);
+		ASTTreeNode typetree = removeNonTypingNodes(guardtree, parameters, parameters_out);
 		
 		return typetree;
 
 	}
 
-	private ASTTreeNode removeNonTypingNodes(ASTTreeNode node, ArrayList<String> para) {
+	private ASTTreeNode removeNonTypingNodes(ASTTreeNode node, ArrayList<String> para, ArrayList<String> parameters_out) {
 
 
-		postConditionTreeTypingNodeFinder(node, null, para);
+		postConditionTreeTypingNodeFinder(node, null, para,parameters_out);
 		ArrayList<ASTTreeNode> temp = new ArrayList<ASTTreeNode>(node.children);
 		
 		for(ASTTreeNode n : node.children)
@@ -303,7 +336,7 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		
 		for(ASTTreeNode n : node.children)
 		{
-			removeNonTypingNodes(n, para);
+			removeNonTypingNodes(n, para,parameters_out);
 		}
 		
 

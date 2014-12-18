@@ -32,6 +32,7 @@ import org.eventb.core.ast.FreeIdentifier;
 import org.eventb.core.ast.IParseResult;
 import org.eventb.core.ast.LanguageVersion;
 import org.eventb.core.ast.Predicate;
+import org.eventb.core.ast.QuantifiedExpression;
 import org.eventb.core.ast.QuantifiedPredicate;
 import org.eventb.core.ast.RelationalPredicate;
 import org.eventb.core.ast.SetExtension;
@@ -117,7 +118,7 @@ public class ASTBuilder {
 		{
 			predicateRoot = new ASTTreeNode(in.getClass().getSimpleName(), in.toString(), in.getTag());
 			Predicate left = ((BinaryPredicate) in).getLeft();
-			Predicate right = ((BinaryPredicate) in).getLeft();
+			Predicate right = ((BinaryPredicate) in).getRight();
 			predicateRoot.addNewChild(treeBuilder(left.toString(), machine));
 			predicateRoot.addNewChild(treeBuilder(right.toString(), machine));
 		}
@@ -158,6 +159,19 @@ public class ASTBuilder {
 		return ps;
 	}
 
+	private String getExpressionText(Expression p, BoundIdentDecl[] bi) {
+		String ps = p.toString();
+		int i = bi.length-1;
+		for(BoundIdentDecl b : bi)
+		{
+			String id = "[["+i+"]]";
+			ps = ps.replace(id, b.toString());
+			i--;
+		}
+
+		return ps;
+	}
+	
 	private ASTTreeNode buildAssignmentTree(Assignment in) {
 		ASTTreeNode assignmentRoot = null;
 		ASTTreeNode rhsroot = null;
@@ -207,7 +221,7 @@ public class ASTBuilder {
 
 	private ASTTreeNode buildExpressionTree(Expression e) {
 
-		if(e.getChildCount() == 0)
+		if(e.getChildCount() == 0 && !(e instanceof ExtendedExpression))
 		{
 
 			ASTTreeNode leaf = new ASTTreeNode(e.getClass().getSimpleName(), e.toString(), e.getTag());
@@ -253,6 +267,8 @@ public class ASTBuilder {
 		
 		else if(e instanceof ExtendedExpression)
 		{
+			//System.out.println(e.getSyntaxTree());
+			
 			Expression[] exp_child = ((ExtendedExpression) e).getChildExpressions();
 			
 			ASTTreeNode extended_exp = new ASTTreeNode(e.getClass().getSimpleName(), ((ExtendedExpression) e).getExtension().getSyntaxSymbol(), 99999);//e.getTag()); //
@@ -296,9 +312,33 @@ public class ASTBuilder {
 			return setex_exp;
 
 		}
+		else if(e instanceof QuantifiedExpression)
+		{
+			/*
+			 * Has not been tested. not sure if it is true * 
+			 */
+			
+			ASTTreeNode quantified = new ASTTreeNode(e.getClass().getSimpleName(), e.toString(), e.getTag());
+			ASTTreeNode quantifiers = new ASTTreeNode("Quantifiers", ",", 9996);
+			BoundIdentDecl[] bi = ((QuantifiedExpression) e).getBoundIdentDecls();
+			for(BoundIdentDecl b : bi)
+			{
+				quantifiers.addNewChild(new ASTTreeNode(b.getClass().getSimpleName(), b.toString(), b.getTag()));
+			}
+			quantified.addNewChild(quantifiers);
+			Predicate p = ((QuantifiedExpression) e).getPredicate();
+			String ps = getPredicateText(p,bi);
+			quantified.addNewChild(treeBuilder(ps, machine));
+			Expression ex = ((QuantifiedExpression) e).getExpression();
+			String exs = getExpressionText(ex,bi);
+			quantified.addNewChild(treeBuilder(exs, machine));
 
+			return quantified;
+		}
 
-		System.out.println("Not Defined! It is going to crash :D");
+		
+		System.out.println("ERRORR: NOT DEFINED!");
+		
 		return null;
 	}
 	

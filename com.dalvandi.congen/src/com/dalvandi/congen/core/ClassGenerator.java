@@ -1,18 +1,21 @@
 package com.dalvandi.congen.core;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+//import java.util.Iterator;
 //import java.io.*;
+
 
 import org.eventb.core.IMachineRoot;
 import org.rodinp.core.RodinDBException;
+
+import com.dalvandi.TreeVisualiser.Visualiser;
 
 public class ClassGenerator {
 
 	private String classname;
 	private ArrayList<String> variables;
 	private ArrayList<String> types;
-	private ArrayList<String> constructoroperators;
+	private ArrayList<String> constructorstatement;
 	private IMachineRoot machine;
 
 	/*
@@ -27,7 +30,7 @@ public class ClassGenerator {
 			classname = mch.getComponentName();
 			variables = vars;
 			types = ty;
-			constructoroperators = cons;
+			constructorstatement = cons;
 			machine = mch;
 	}
 	
@@ -47,6 +50,9 @@ public class ClassGenerator {
 		ASTTreeNode class_node = getClassNode();
 		class_node.addNewChild(getClassBodyNode());
 		 
+		//Visualiser v = new Visualiser();
+		//v.visualise(class_node);
+		
 		AssertionTranslator tr = new AssertionTranslator();
 		System.out.println(tr.translateASTTree(class_node));
 		
@@ -112,9 +118,9 @@ public class ClassGenerator {
 	 */
 
 
-	private void buildDafnyFile(String mtdname, String st)
+	/*private void buildDafnyFile(String mtdname, String st)
 	{
-		/*BufferedWriter bw = null;
+		BufferedWriter bw = null;
 		try {
 		bw = new BufferedWriter(new FileWriter(mtdname + ".dfy", true));
 		bw.write(st);
@@ -128,9 +134,9 @@ public class ClassGenerator {
 		}
 		catch (IOException ioe2){}
 		}
-		*/
+		
 
-	}
+	}*/
 
 	/*
 	 * This method build a tree for all generic types (carrier sets taken from contexts)
@@ -193,7 +199,7 @@ public class ClassGenerator {
 		ASTTreeNode body = new ASTTreeNode("Class Body", "", 9512);
 		ASTTreeNode vars = new VariablesDeclaration().getVariablesNode(machine, variables, types);
 		ASTTreeNode invs = new Invariants().getInvariantsNode(machine, variables, types);
-		ASTTreeNode mtd = new MethodGenerator().getMethodsNode(machine, variables, types, constructoroperators);
+		ASTTreeNode mtd = new MethodGenerator().getMethodsNode(machine, variables, types, constructorstatement);
 		body.addNewChild(vars);
 		body.addNewChild(invs);
 		body.addNewChild(mtd);

@@ -77,9 +77,9 @@ public class VariablesDeclaration {
 			return false;
 		else 
 		{
-			if(vars.contains(node.children.get(0).content))
+			if(vars.contains(node.children.get(0).getContent()))
 					{
-				if(types.contains(node.children.get(1).content) || t.builtin_types.contains(node.children.get(1).tag) ||  t.extended_types.contains(node.children.get(1).content))
+				if(types.contains(node.children.get(1).getContent()) || t.builtin_types.contains(node.children.get(1).tag) ||  t.extended_types.contains(node.children.get(1).getContent()))
 					{
 						return true;
 					}

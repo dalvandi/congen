@@ -22,9 +22,9 @@ public class AssertionTranslator extends ASTTranslator {
 			if(rule.nodetype == IDENTIFIER || rule.nodetype == LITERAL)
 			{
 				if(node.isOld)
-					return "old("+node.content+")";
+					return "old("+node.getContent()+")";
 				else
-					return node.content;
+					return node.getContent();
 			}
 			else if(rule.nodetype == TYPE)
 			{

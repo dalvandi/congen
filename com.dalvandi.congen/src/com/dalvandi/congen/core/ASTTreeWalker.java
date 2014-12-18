@@ -36,15 +36,15 @@ public class ASTTreeWalker {
 
 		if(root.children.size() == 0)
 		{
-			System.out.println("Node(Tag: "+root.tag+", Content: "+ root.content+ ")	");
+			System.out.println("Node(Tag: "+root.tag+", Content: "+ root.getContent()+ ")	");
 			if(node != null && !node.equals(root))
-				System.out.println("Child of	Node(Tag: "+node.tag+", Content: "+ node.content+ ")	");
+				System.out.println("Child of	Node(Tag: "+node.tag+", Content: "+ node.getContent()+ ")	");
 
 		}
 		else{
-			System.out.println("Node(Tag: "+root.tag+", Content: "+ root.content+ ")	");
+			System.out.println("Node(Tag: "+root.tag+", Content: "+ root.getContent()+ ")	");
 			if(node != null && !node.equals(root))
-				System.out.println("Child of	Node(Tag: "+node.tag+", Content: "+ node.content+ ")	");
+				System.out.println("Child of	Node(Tag: "+node.tag+", Content: "+ node.getContent()+ ")	");
 
 			for(ASTTreeNode n : root.children)
 			{

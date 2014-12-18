@@ -12,57 +12,113 @@ import org.rodinp.core.RodinDBException;
 
 public class MethodGenerator {
 
-	public ArrayList<String> getMethods(IMachineRoot mch, ArrayList<String> vars,ArrayList<String> types, ArrayList<String> constat) throws RodinDBException
-	{
-		
-		ArrayList<String> methods = new ArrayList<String>();
-		
+
+	public ASTTreeNode getMethodsNode(IMachineRoot mch, ArrayList<String> vars,ArrayList<String> types, ArrayList<String> constat) throws RodinDBException {
+
+		ASTTreeNode methods = new ASTTreeNode("Methods", "", 9522);
 		for(String s : constat)
 		{	
-		
-			String methodname = getMethodName(s);
-			ArrayList<String> metpar = getMethodParameters(s);
+			
+			String mtdname = getMethodName(s);
+			ArrayList<String> metpar_in = getMethodInParameters(s);
+			ArrayList<String> metpar_out = getMethodOutParameters(s);
 			ArrayList<String> events = getMethodEvents(s);
-			ArrayList<String> method = getMethod(mch, vars, types, methodname, metpar, events);
-			methods.addAll(methods.size(), method);
+			ASTTreeNode mtd = getMethodNode(mch, vars, types, mtdname, metpar_in,metpar_out, events);
+			methods.addNewChild(mtd);
 
 		}
 		
 		
 		return methods;
-		
 	}
-
-	private ArrayList<String> getMethod(IMachineRoot mch, ArrayList<String> vars, ArrayList<String> types, String methodname, ArrayList<String> metpar, ArrayList<String> events) throws RodinDBException {
+	
+	private ASTTreeNode getMethodNode(IMachineRoot mch, ArrayList<String> vars,
+			ArrayList<String> types, String methodname, ArrayList<String> metpar, 
+			ArrayList<String> metpar_out, ArrayList<String> events)
+					throws RodinDBException 
+	{
 		
-		String method_decl = getMethodDeclaration(mch,methodname, metpar, events,vars, types);
-		ContractGenerator methodpostcondition = new ContractGenerator(mch, vars, types, methodname, metpar, events);
-		ArrayList<String> postconditions = methodpostcondition.getMethodPostconditions();
-		ArrayList<String> method = new ArrayList<String>();
-		ArrayList<String> precondition = new ArrayList<String>();
-		precondition.add("requires Valid();");
-		postconditions.add(0, "ensures Valid();");
-		method.add(0, method_decl);
+		ASTTreeNode mtd = new ASTTreeNode("Method", "", 9530);
 		
-		if(!methodname.equals("Init")){
-		method.addAll(method.size(), precondition);
+		ASTTreeNode mtdname = new ASTTreeNode("Method Name", "", 9540);
+		mtdname.addNewChild(new ASTTreeNode("Method Name", methodname, 1));
+		
+		ASTTreeNode mtdargs = new ASTTreeNode("Method Args In", "", 9541);
+		mtdargs.addNewChild(getMethodArgsNode(mch,methodname, metpar,metpar_out, events,vars, types));
+		if(metpar.size() == 0)
+		{
+			System.out.println("Input par = 0");
+		}
+		if(metpar_out.size() == 0)
+		{
+			System.out.println("Output par = 0");
 		}
 		
-		method.addAll(method.size(), postconditions);
+		ASTTreeNode mtdargs_out = new ASTTreeNode("Method Args Out", "", 9541);
+		mtdargs_out.addNewChild(getMethodArgsNodeOut(mch,methodname,metpar, metpar_out, events,vars, types));
+
 		
-		return method;
+		
+		ASTTreeNode precondition = new ASTTreeNode("Method Precondition", "", 9542); //
+		
+		ContractGenerator methodpostcondition = new ContractGenerator(mch, vars, types, methodname, metpar, metpar_out, events);
+		methodpostcondition.getMethodPostconditionsNode();
+		
+		ASTTreeNode postcondition = new ASTTreeNode("Method Precondition", "", 9543);
+		postcondition.addNewChild(methodpostcondition.getMethodPostconditionsNode());
+
+		mtd.addNewChild(mtdname);
+		mtd.addNewChild(mtdargs);
+		mtd.addNewChild(mtdargs_out);
+		
+		if(!methodname.equals("Init")){
+			mtd.addNewChild(precondition);
+		}	
+		else
+		{
+			mtd.addNewChild(new ASTTreeNode("Empty", "", 9997));
+		}
+		
+		mtd.addNewChild(postcondition);
+		
+		
+		
+		return mtd;
 	}
-
-	private String getMethodDeclaration(IMachineRoot mch,
-			String methodname, ArrayList<String> metpar, ArrayList<String> events,ArrayList<String> vars,ArrayList<String> types) throws RodinDBException {
-
+	
+	private ASTTreeNode getMethodArgsNode(IMachineRoot mch,
+			String methodname, ArrayList<String> metpar, ArrayList<String> metpar_out, ArrayList<String> events,ArrayList<String> vars,ArrayList<String> types) throws RodinDBException {
+		
+		ASTTreeNode methodtypes;
+		
+		if(metpar.size() != 0)
+		{
 		AssertionTreeBuilder astTree = new AssertionTreeBuilder(vars, types);
 		String evt = events.get(0);
-		ASTTreeNode methodtypes = astTree.methodTypingTreeBuilder(mch, metpar, evt);
-		ASTTranslator translation = new ASTTranslator();
-		String method_decl = "method "+ methodname + "("+translation.translateASTTree(methodtypes) +")";
+		methodtypes = astTree.methodTypingTreeBuilder(mch, metpar,metpar_out, evt);
+		}
+		else
+			methodtypes = new ASTTreeNode("EMPTY", "" , 9997);
 		
-		return method_decl;
+		return methodtypes;
+	}
+	
+	private ASTTreeNode getMethodArgsNodeOut(IMachineRoot mch,
+			String methodname, ArrayList<String> metpar, ArrayList<String> metpar_out, ArrayList<String> events,ArrayList<String> vars,ArrayList<String> types) throws RodinDBException {
+
+		ASTTreeNode methodtypes;
+		
+		if(metpar_out.size() != 0)
+		{
+		AssertionTreeBuilder astTree = new AssertionTreeBuilder(vars, types);
+		String evt = events.get(0);
+		methodtypes = astTree.methodTypingTreeBuilder(mch, metpar_out,metpar, evt);
+		}
+		else
+			methodtypes = new ASTTreeNode("EMPTY", "" , 9997);
+		
+		return methodtypes;
+		
 	}
 
 	private ArrayList<String> getMethodEvents(String s) {
@@ -85,8 +141,36 @@ public class MethodGenerator {
 		return evts;
 	}
 
-	private ArrayList<String> getMethodParameters(String s) {
+	private ArrayList<String> getMethodInParameters(String s) {
 
+		int i_ret = s.indexOf("returns");
+		s = (String) s.subSequence(0, i_ret);
+		
+		s = s.replaceAll("\\s","");
+		ArrayList<String> pars = new ArrayList<String>();
+		String type = "\\(([\\s*|\\w*|\\W*|\\S*]+)\\)";
+		Matcher m;
+
+			
+		Pattern p =  Pattern.compile(type);
+		m = p.matcher(s);
+		
+
+		if (m.find())
+		{
+		    //System.out.println(m.group(1));
+		    pars = new ArrayList<String>(Arrays.asList(m.group(1).split(",")));
+		    return pars;
+		}
+		return pars;
+	}
+	
+	
+	private ArrayList<String> getMethodOutParameters(String s) {
+		
+		int i_ret = s.indexOf("returns");
+		s = (String) s.subSequence(i_ret,s.length());
+		
 		s = s.replaceAll("\\s","");
 		ArrayList<String> pars = new ArrayList<String>();
 		String type = "\\(([\\s*|\\w*|\\W*|\\S*]+)\\)";
@@ -106,8 +190,12 @@ public class MethodGenerator {
 		return pars;
 	}
 
+
 	private String getMethodName(String s) {
-		//method $name($a,$b) = {$ev1, $ev2}
+		//method $name($a,$b) returns ($c,$d) = {$ev1, $ev2}
+		int i_ret = s.indexOf("returns");
+		s = (String) s.subSequence(0, i_ret);
+
 		String type = "method ([\\s*|\\w*|\\W*|\\S*]+)\\(";
 		Matcher m;
 
@@ -115,7 +203,6 @@ public class MethodGenerator {
 		Pattern p =  Pattern.compile(type);
 		m = p.matcher(s);
 		
-
 		if (m.find())
 		{
 		    return m.group(1);
@@ -134,68 +221,62 @@ public class MethodGenerator {
 
 	}
 
-	public ASTTreeNode getMethodsNode(IMachineRoot mch, ArrayList<String> vars,ArrayList<String> types, ArrayList<String> constat) throws RodinDBException {
-
-		ASTTreeNode methods = new ASTTreeNode("Methods", "", 9522);
+	
+	@Deprecated
+	public ArrayList<String> getMethods(IMachineRoot mch, ArrayList<String> vars,ArrayList<String> types, ArrayList<String> constat) throws RodinDBException
+	{
+		
+		ArrayList<String> methods = new ArrayList<String>();
+		
 		for(String s : constat)
 		{	
-			
-			String mtdname = getMethodName(s);
-			ArrayList<String> metpar = getMethodParameters(s);
+		
+			String methodname = getMethodName(s);
+			ArrayList<String> metpar_in = getMethodInParameters(s);
+			ArrayList<String> metpar_out = getMethodOutParameters(s);
 			ArrayList<String> events = getMethodEvents(s);
-			ASTTreeNode mtd = getMethodNode(mch, vars, types, mtdname, metpar, events);
-			methods.addNewChild(mtd);
+			ArrayList<String> method = getMethod(mch, vars, types, methodname, metpar_in, metpar_out, events);
+			methods.addAll(methods.size(), method);
 
 		}
 		
 		
 		return methods;
+		
 	}
-	
-	private ASTTreeNode getMethodNode(IMachineRoot mch, ArrayList<String> vars, ArrayList<String> types, String methodname, ArrayList<String> metpar, ArrayList<String> events) throws RodinDBException 
-	{
-		
-		ASTTreeNode mtd = new ASTTreeNode("Method", "", 9530);
-		
-		ASTTreeNode mtdname = new ASTTreeNode("Method Name", "", 9540);
-		mtdname.addNewChild(new ASTTreeNode("Method Name", methodname, 1));
-		
-		ASTTreeNode mtdargs = new ASTTreeNode("Method Name", "", 9541);
-		mtdargs.addNewChild(getMethodArgsNode(mch,methodname, metpar, events,vars, types));
-		
-		ASTTreeNode precondition = new ASTTreeNode("Method Precondition", "", 9542); //
-		
-		ContractGenerator methodpostcondition = new ContractGenerator(mch, vars, types, methodname, metpar, events);
-		methodpostcondition.getMethodPostconditionsNode();
-		ASTTreeNode postcondition = new ASTTreeNode("Method Precondition", "", 9543);
-		postcondition.addNewChild(methodpostcondition.getMethodPostconditionsNode());
 
-		mtd.addNewChild(mtdname);
-		mtd.addNewChild(mtdargs);
+	@Deprecated
+	private ArrayList<String> getMethod(IMachineRoot mch, ArrayList<String> vars, ArrayList<String> types, String methodname, ArrayList<String> metpar,ArrayList<String> metpar_out, ArrayList<String> events) throws RodinDBException {
+		
+		String method_decl = getMethodDeclaration(mch,methodname, metpar,metpar_out, events,vars, types);
+		ContractGenerator methodpostcondition = new ContractGenerator(mch, vars, types, methodname, metpar, metpar_out, events);
+		ArrayList<String> postconditions = methodpostcondition.getMethodPostconditions();
+		ArrayList<String> method = new ArrayList<String>();
+		ArrayList<String> precondition = new ArrayList<String>();
+		precondition.add("requires Valid();");
+		postconditions.add(0, "ensures Valid();");
+		method.add(0, method_decl);
 		
 		if(!methodname.equals("Init")){
-			mtd.addNewChild(precondition);
-		}	
-		else
-		{
-			mtd.addNewChild(new ASTTreeNode("Empty", "", 9997));
+		method.addAll(method.size(), precondition);
 		}
 		
-		mtd.addNewChild(postcondition);
+		method.addAll(method.size(), postconditions);
 		
-		
-		
-		return mtd;
+		return method;
 	}
-	
-	private ASTTreeNode getMethodArgsNode(IMachineRoot mch,
-			String methodname, ArrayList<String> metpar, ArrayList<String> events,ArrayList<String> vars,ArrayList<String> types) throws RodinDBException {
+	@Deprecated
+	private String getMethodDeclaration(IMachineRoot mch,
+			String methodname, ArrayList<String> metpar, ArrayList<String> metpar_out, ArrayList<String> events,ArrayList<String> vars,ArrayList<String> types) throws RodinDBException {
 
 		AssertionTreeBuilder astTree = new AssertionTreeBuilder(vars, types);
 		String evt = events.get(0);
-		ASTTreeNode methodtypes = astTree.methodTypingTreeBuilder(mch, metpar, evt);
+		ASTTreeNode methodtypes = astTree.methodTypingTreeBuilder(mch, metpar,metpar_out, evt);
+		ASTTranslator translation = new ASTTranslator();
+		String method_decl = "method "+ methodname + "("+translation.translateASTTree(methodtypes) +")";
 		
-		return methodtypes;
+		return method_decl;
 	}
+
 
 }

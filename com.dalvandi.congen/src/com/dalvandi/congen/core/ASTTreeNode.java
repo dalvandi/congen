@@ -3,8 +3,8 @@ package com.dalvandi.congen.core;
 import java.util.ArrayList;
 
 public class ASTTreeNode implements Cloneable{
-	ArrayList<ASTTreeNode> children;
-	String content;
+	public ArrayList<ASTTreeNode> children;
+	private String content;
 	String type;
 	int tag;
 	boolean isType;			// Is this node contains a type?
@@ -20,7 +20,7 @@ public class ASTTreeNode implements Cloneable{
 	{
 		children = new ArrayList<ASTTreeNode>();
 		type = ty;
-		content = c;
+		setContent(c);
 		tag = t;
 		
 		isType = false;
@@ -38,7 +38,7 @@ public class ASTTreeNode implements Cloneable{
 	{
 		children = new ArrayList<ASTTreeNode>();
 		type = ty;
-		content = c;
+		setContent(c);
 		tag = t;
 		
 		isType = Type;
@@ -63,6 +63,16 @@ public class ASTTreeNode implements Cloneable{
 	void addNewChild(ASTTreeNode child)
 	{
 		children.add(child);
+	}
+
+
+	public String getContent() {
+		return this.content;
+	}
+
+
+	private void setContent(String content) {
+		this.content = content;
 	}
 
 }
