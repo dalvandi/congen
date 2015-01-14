@@ -225,7 +225,6 @@ public class ASTBuilder {
 		{
 
 			ASTTreeNode leaf = new ASTTreeNode(e.getClass().getSimpleName(), e.toString(), e.getTag());
-			
 			if(vars.contains(e.toString()))
 				{
 					leaf.isVariable = true;

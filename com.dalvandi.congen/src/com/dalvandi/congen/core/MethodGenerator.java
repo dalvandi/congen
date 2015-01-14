@@ -12,8 +12,8 @@ import org.rodinp.core.RodinDBException;
 
 public class MethodGenerator {
 
-
-	public ASTTreeNode getMethodsNode(IMachineRoot mch, ArrayList<String> vars,ArrayList<String> types, ArrayList<String> constat) throws RodinDBException {
+	//int tag is tag of invariants tree. If it is 9997, it means that there is no invariant to be translated 
+	public ASTTreeNode getMethodsNode(IMachineRoot mch, ArrayList<String> vars,ArrayList<String> types, ArrayList<String> constat, int tag) throws RodinDBException {
 
 		ASTTreeNode methods = new ASTTreeNode("Methods", "", 9522);
 		for(String s : constat)
@@ -23,7 +23,7 @@ public class MethodGenerator {
 			ArrayList<String> metpar_in = getMethodInParameters(s);
 			ArrayList<String> metpar_out = getMethodOutParameters(s);
 			ArrayList<String> events = getMethodEvents(s);
-			ASTTreeNode mtd = getMethodNode(mch, vars, types, mtdname, metpar_in,metpar_out, events);
+			ASTTreeNode mtd = getMethodNode(mch, vars, types, mtdname, metpar_in, metpar_out, events, tag);
 			methods.addNewChild(mtd);
 
 		}
@@ -34,43 +34,34 @@ public class MethodGenerator {
 	
 	private ASTTreeNode getMethodNode(IMachineRoot mch, ArrayList<String> vars,
 			ArrayList<String> types, String methodname, ArrayList<String> metpar, 
-			ArrayList<String> metpar_out, ArrayList<String> events)
+			ArrayList<String> metpar_out, ArrayList<String> events, int tag)
 					throws RodinDBException 
 	{
 		
 		ASTTreeNode mtd = new ASTTreeNode("Method", "", 9530);
 		
+		
 		ASTTreeNode mtdname = new ASTTreeNode("Method Name", "", 9540);
+		//Add method name child
 		mtdname.addNewChild(new ASTTreeNode("Method Name", methodname, 1));
-		
+			mtd.addNewChild(mtdname);
+	
+		//Add method's input arguments
 		ASTTreeNode mtdargs = new ASTTreeNode("Method Args In", "", 9541);
-		mtdargs.addNewChild(getMethodArgsNode(mch,methodname, metpar,metpar_out, events,vars, types));
-		if(metpar.size() == 0)
-		{
-			System.out.println("Input par = 0");
-		}
-		if(metpar_out.size() == 0)
-		{
-			System.out.println("Output par = 0");
-		}
-		
-		ASTTreeNode mtdargs_out = new ASTTreeNode("Method Args Out", "", 9541);
-		mtdargs_out.addNewChild(getMethodArgsNodeOut(mch,methodname,metpar, metpar_out, events,vars, types));
-
-		
-		
-		ASTTreeNode precondition = new ASTTreeNode("Method Precondition", "", 9542); //
-		
-		ContractGenerator methodpostcondition = new ContractGenerator(mch, vars, types, methodname, metpar, metpar_out, events);
-		methodpostcondition.getMethodPostconditionsNode();
-		
-		ASTTreeNode postcondition = new ASTTreeNode("Method Precondition", "", 9543);
-		postcondition.addNewChild(methodpostcondition.getMethodPostconditionsNode());
-
-		mtd.addNewChild(mtdname);
+		mtdargs.addNewChild(getMethodArgsNode(mch, methodname, metpar,metpar_out, events, vars, types));
 		mtd.addNewChild(mtdargs);
+
+		//Add method's output arguments
+		ASTTreeNode mtdargs_out = new ASTTreeNode("Method Args Out", "", 9541);
+		mtdargs_out.addNewChild(getMethodArgsNodeOut(mch, methodname, metpar, metpar_out, events, vars, types));
 		mtd.addNewChild(mtdargs_out);
-		
+
+		//Add method's contracts:
+		ContractGenerator contract = new ContractGenerator(mch, vars, types, methodname, metpar, metpar_out, events, tag);
+				
+		//Add method's preconditions
+		ASTTreeNode precondition = new ASTTreeNode("Method Precondition", "", 9542); //
+		precondition.addNewChild(contract.getMethodPreconditionNode());
 		if(!methodname.equals("Init")){
 			mtd.addNewChild(precondition);
 		}	
@@ -79,12 +70,16 @@ public class MethodGenerator {
 			mtd.addNewChild(new ASTTreeNode("Empty", "", 9997));
 		}
 		
+		//Add method's postconditions
+		ASTTreeNode postcondition = new ASTTreeNode("Method Postcondition", "", 9543);//
+		postcondition.addNewChild(contract.getMethodPostconditionsNode());
 		mtd.addNewChild(postcondition);
-		
-		
-		
+
+						
 		return mtd;
 	}
+	
+	
 	
 	private ASTTreeNode getMethodArgsNode(IMachineRoot mch,
 			String methodname, ArrayList<String> metpar, ArrayList<String> metpar_out, ArrayList<String> events,ArrayList<String> vars,ArrayList<String> types) throws RodinDBException {
@@ -223,7 +218,7 @@ public class MethodGenerator {
 
 	
 	@Deprecated
-	public ArrayList<String> getMethods(IMachineRoot mch, ArrayList<String> vars,ArrayList<String> types, ArrayList<String> constat) throws RodinDBException
+	public ArrayList<String> getMethods(IMachineRoot mch, ArrayList<String> vars,ArrayList<String> types, ArrayList<String> constat, int tag) throws RodinDBException
 	{
 		
 		ArrayList<String> methods = new ArrayList<String>();
@@ -235,7 +230,7 @@ public class MethodGenerator {
 			ArrayList<String> metpar_in = getMethodInParameters(s);
 			ArrayList<String> metpar_out = getMethodOutParameters(s);
 			ArrayList<String> events = getMethodEvents(s);
-			ArrayList<String> method = getMethod(mch, vars, types, methodname, metpar_in, metpar_out, events);
+			ArrayList<String> method = getMethod(mch, vars, types, methodname, metpar_in, metpar_out, events, tag);
 			methods.addAll(methods.size(), method);
 
 		}
@@ -246,10 +241,10 @@ public class MethodGenerator {
 	}
 
 	@Deprecated
-	private ArrayList<String> getMethod(IMachineRoot mch, ArrayList<String> vars, ArrayList<String> types, String methodname, ArrayList<String> metpar,ArrayList<String> metpar_out, ArrayList<String> events) throws RodinDBException {
+	private ArrayList<String> getMethod(IMachineRoot mch, ArrayList<String> vars, ArrayList<String> types, String methodname, ArrayList<String> metpar,ArrayList<String> metpar_out, ArrayList<String> events, int tag) throws RodinDBException {
 		
 		String method_decl = getMethodDeclaration(mch,methodname, metpar,metpar_out, events,vars, types);
-		ContractGenerator methodpostcondition = new ContractGenerator(mch, vars, types, methodname, metpar, metpar_out, events);
+		ContractGenerator methodpostcondition = new ContractGenerator(mch, vars, types, methodname, metpar, metpar_out, events, tag);
 		ArrayList<String> postconditions = methodpostcondition.getMethodPostconditions();
 		ArrayList<String> method = new ArrayList<String>();
 		ArrayList<String> precondition = new ArrayList<String>();

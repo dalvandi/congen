@@ -82,7 +82,7 @@ public class ASTTranslator {
 		*/
 		translation_extended = new HashMap<String, TranslationRules>();
 		
-		translation_extended.put("seq", new TranslationRules(EXTENDEDOPERATOR,1,"seq<arg1>",true));
+		translation_extended.put("seq", new TranslationRules(EXTENDEDOPERATOR,1,"seq<arg1>",true)); //type
 		translation_extended.put("seqSize", new TranslationRules(EXTENDEDOPERATOR,1,"|arg1|",false));
 		translation_extended.put("seqSliceToN", new TranslationRules(EXTENDEDOPERATOR,2,"arg1[..arg2]",false));
 		translation_extended.put("seqSliceFromN", new TranslationRules(EXTENDEDOPERATOR,2,"arg1[arg2-1..]",false));
@@ -99,6 +99,9 @@ public class ASTTranslator {
 		translation_nmap.put(4, new TranslationRules(LITERAL,0,"",false));
 		translation_nmap.put(5, new TranslationRules(EXTENDEDOPERATOR,0,"arg1",false)); //Set
 		translation_nmap.put(6, new TranslationRules(MATHOPERATOR,0," := ",false)); // Assignment
+		translation_nmap.put(401, new TranslationRules(MATHOPERATOR,0," int ",false)); // int
+		translation_nmap.put(402, new TranslationRules(MATHOPERATOR,0," nat ",false)); // nat
+		translation_nmap.put(404, new TranslationRules(MATHOPERATOR,0," bool ",false)); // bool
 		translation_nmap.put(306, new TranslationRules(MATHOPERATOR,0," + ",false)); // Sum
 		translation_nmap.put(307, new TranslationRules(MATHOPERATOR,0," * ",false)); // Product
 		translation_nmap.put(222, new TranslationRules(MATHOPERATOR,0," - ",false)); // Minus
@@ -158,11 +161,12 @@ public class ASTTranslator {
 		translation_nmap.put(9530, new TranslationRules(EXTENDEDOPERATOR,0,"\n\nmethod arg1(arg2) returns(arg3)\nmodifies this;\narg4arg5",false)); // Method
 		translation_nmap.put(9540, new TranslationRules(MATHOPERATOR,0,"",false)); // Method Name
 		translation_nmap.put(9541, new TranslationRules(MATHOPERATOR,0,"",false)); // Method Arguments
-		translation_nmap.put(9542, new TranslationRules(MATHOPERATOR,0,"requires Valid();\n",false)); // Method Preconditions
+		//translation_nmap.put(9542, new TranslationRules(MATHOPERATOR,0,"requires Valid();\n",false)); // Method Preconditions
+		translation_nmap.put(9542, new TranslationRules(MATHOPERATOR,0,"",false)); // Method Preconditions
 		translation_nmap.put(9543, new TranslationRules(EXTENDEDOPERATOR,0,"ensures Valid();\narg1",false)); // Method Postconditions
 		translation_nmap.put(9544, new TranslationRules(MATHOPERATOR,0,"",false)); // Method Body
-		translation_nmap.put(9545, new TranslationRules(EXTENDEDOPERATOR,0,"arg1\n",false)); // Invariant next line
-		translation_nmap.put(9600, new TranslationRules(EXTENDEDOPERATOR,0,"requires arg1;",false)); // Pre-condition
+		translation_nmap.put(9545, new TranslationRules(EXTENDEDOPERATOR,0,"arg1",false)); // Invariant next line
+		translation_nmap.put(9600, new TranslationRules(EXTENDEDOPERATOR,0,"requires arg1;\n",false)); // Pre-condition
 		translation_nmap.put(9601, new TranslationRules(EXTENDEDOPERATOR,0,"ensures arg1;",false)); // Post-condition
 
 

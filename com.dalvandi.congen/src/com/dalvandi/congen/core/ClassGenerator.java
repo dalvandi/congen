@@ -5,6 +5,7 @@ import java.util.ArrayList;
 //import java.io.*;
 
 
+
 import org.eventb.core.IMachineRoot;
 import org.rodinp.core.RodinDBException;
 
@@ -52,7 +53,7 @@ public class ClassGenerator {
 		 
 		//Visualiser v = new Visualiser();
 		//v.visualise(class_node);
-		
+
 		AssertionTranslator tr = new AssertionTranslator();
 		System.out.println(tr.translateASTTree(class_node));
 		
@@ -143,6 +144,7 @@ public class ClassGenerator {
 	 * and then translate it to text and returns declaration of the class with regards 
 	 * to those generic types. 
 	 */
+	@Deprecated
 	private String getClassDeclartion() {
 
 		if(!types.isEmpty())
@@ -199,7 +201,7 @@ public class ClassGenerator {
 		ASTTreeNode body = new ASTTreeNode("Class Body", "", 9512);
 		ASTTreeNode vars = new VariablesDeclaration().getVariablesNode(machine, variables, types);
 		ASTTreeNode invs = new Invariants().getInvariantsNode(machine, variables, types);
-		ASTTreeNode mtd = new MethodGenerator().getMethodsNode(machine, variables, types, constructorstatement);
+		ASTTreeNode mtd = new MethodGenerator().getMethodsNode(machine, variables, types, constructorstatement, invs.tag);
 		body.addNewChild(vars);
 		body.addNewChild(invs);
 		body.addNewChild(mtd);

@@ -10,6 +10,37 @@ import org.rodinp.core.RodinDBException;
 public class Invariants{
 
 	
+	public ASTTreeNode getInvariantsNode(IMachineRoot mch,
+			ArrayList<String> vars, ArrayList<String> types) throws RodinDBException {
+		
+		ASTBuilder itb = new ASTBuilder(vars, types);
+		ASTTreeNode invs = new ASTTreeNode("Invariants","Invariants", 9521);
+		ASTTreeNode and = new ASTTreeNode("And","&&", 351);
+		invs.addNewChild(and);
+		int numberOfInv = 0;
+		
+		for(IInvariant inv : mch.getInvariants())
+		{
+			if(!isTypingTree(itb.treeBuilder(inv.getPredicateString(), mch), vars, types)  && isGluing(inv) && !inv.isTheorem()) 
+			{
+				ASTTreeNode inva = new ASTTreeNode("Invariant","Inv", 9545);
+				ASTTreeNode n = itb.treeBuilder(inv.getPredicateString(), mch);
+				
+				inva.addNewChild(n);
+				and.addNewChild(inva);
+				numberOfInv++;
+			}
+			
+			if(numberOfInv == 0)
+			{
+				return new ASTTreeNode("Empty Node","", 9997);
+			}
+
+		}
+				
+		return invs;
+	}
+	
 
 	private boolean isGluing(IInvariant inv) throws RodinDBException {
 
@@ -47,32 +78,6 @@ public class Invariants{
 
 
 
-
-	public ASTTreeNode getInvariantsNode(IMachineRoot mch,
-			ArrayList<String> vars, ArrayList<String> types) throws RodinDBException {
-		
-		ASTBuilder itb = new ASTBuilder(vars, types);
-		ASTTreeNode invs = new ASTTreeNode("Invariants","Invariants", 9521);
-		ASTTreeNode and = new ASTTreeNode("And","&&", 351);
-		invs.addNewChild(and);
-		
-		for(IInvariant inv : mch.getInvariants())
-		{
-			if(!isTypingTree(itb.treeBuilder(inv.getPredicateString(), mch), vars, types)  && isGluing(inv)) //&& !inv.isTheorem() 
-			{
-				ASTTreeNode inva = new ASTTreeNode("Invariant","Inv", 9545);
-				ASTTreeNode n = itb.treeBuilder(inv.getPredicateString(), mch);
-				
-				inva.addNewChild(n);
-				and.addNewChild(inva);
-			}
-
-		}
-				
-		return invs;
-	}
-	
-	
 	@Deprecated
 	public ArrayList<String> getInvariants(IMachineRoot mch,
 			ArrayList<String> vars, ArrayList<String> types) throws RodinDBException {

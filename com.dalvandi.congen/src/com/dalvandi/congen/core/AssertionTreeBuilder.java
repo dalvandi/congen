@@ -235,8 +235,9 @@ public class AssertionTreeBuilder extends ASTBuilder {
 			else
 				node.isType = true; // This should be updated.
 		}
-		
-		if(node.tag == 401 || node.tag == 1001) // what about seq?
+		Types ty = new Types();
+		//if(node.tag == 401 || node.tag == 1001) // what about seq?
+		if(ty.builtin_types.contains(node.tag) || ty.extended_types.contains(node.tag))
 			node.isType = true;
 
 		if(node.tag == 6 || node.tag == 101){ // right handside of assignements should be old

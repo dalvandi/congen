@@ -4,8 +4,6 @@
  * Class ContractGenerationPlugin
  * Whenever a user invoke the contract generator for generating contracts from Rodin,
  * method run() of this class is invoked.
- * 
- * 
  *
 */
 package com.dalvandi.congen;
