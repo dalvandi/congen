@@ -144,6 +144,7 @@ public class ASTTranslator {
 		//translation_nmap.put(801, new TranslationRules(EXTENDEDOPERATOR,2,"(set arg1 | arg2 :: arg3)",false)); //set comprehension {arg.arg2|arg3}
 
 		translation_nmap.put(9990, new TranslationRules(MATHOPERATOR,0,"ND",false)); // Next line
+		translation_nmap.put(9991, new TranslationRules(EXTENDEDOPERATOR,0,"(arg1)",false)); // parentheses
 		translation_nmap.put(9995, new TranslationRules(MATHOPERATOR,0,"\n",false)); // Next line
 		translation_nmap.put(9996, new TranslationRules(MATHOPERATOR,0,",",false)); // comma
 		translation_nmap.put(9997, new TranslationRules(MATHOPERATOR,0,"",false)); // Empty Node
@@ -158,15 +159,14 @@ public class ASTTranslator {
 		translation_nmap.put(9531, new TranslationRules(EXTENDEDOPERATOR,0,"ghost var arg1;\n",false)); // Ghost Variable
 		translation_nmap.put(9521, new TranslationRules(EXTENDEDOPERATOR,0,"predicate Valid()\nreads this;\n{\narg1\n}",false)); // Class Invariants //TODO: Add a next line node
 		translation_nmap.put(9522, new TranslationRules(MATHOPERATOR,0,"",false)); // Class Methods
-		translation_nmap.put(9530, new TranslationRules(EXTENDEDOPERATOR,0,"\n\nmethod arg1(arg2) returns(arg3)\nmodifies this;\narg4arg5",false)); // Method
+		translation_nmap.put(9530, new TranslationRules(EXTENDEDOPERATOR,0,"\n\nmethod arg1(arg2) returns(arg3)\narg4\nmodifies this;\narg5",false)); // Method
 		translation_nmap.put(9540, new TranslationRules(MATHOPERATOR,0,"",false)); // Method Name
 		translation_nmap.put(9541, new TranslationRules(MATHOPERATOR,0,"",false)); // Method Arguments
-		//translation_nmap.put(9542, new TranslationRules(MATHOPERATOR,0,"requires Valid();\n",false)); // Method Preconditions
 		translation_nmap.put(9542, new TranslationRules(MATHOPERATOR,0,"",false)); // Method Preconditions
-		translation_nmap.put(9543, new TranslationRules(EXTENDEDOPERATOR,0,"ensures Valid();\narg1",false)); // Method Postconditions
+		translation_nmap.put(9543, new TranslationRules(EXTENDEDOPERATOR,0,"arg1",false)); // Method Postconditions
 		translation_nmap.put(9544, new TranslationRules(MATHOPERATOR,0,"",false)); // Method Body
 		translation_nmap.put(9545, new TranslationRules(EXTENDEDOPERATOR,0,"arg1",false)); // Invariant next line
-		translation_nmap.put(9600, new TranslationRules(EXTENDEDOPERATOR,0,"requires arg1;\n",false)); // Pre-condition
+		translation_nmap.put(9600, new TranslationRules(EXTENDEDOPERATOR,0,"requires arg1;",false)); // Pre-condition
 		translation_nmap.put(9601, new TranslationRules(EXTENDEDOPERATOR,0,"ensures arg1;",false)); // Post-condition
 
 

@@ -30,14 +30,13 @@ public class Invariants{
 				and.addNewChild(inva);
 				numberOfInv++;
 			}
-			
-			if(numberOfInv == 0)
-			{
-				return new ASTTreeNode("Empty Node","", 9997);
-			}
-
 		}
-				
+		
+		if(numberOfInv == 0)
+		{
+				return new ASTTreeNode("Empty Node","", 9997);
+		}	
+		
 		return invs;
 	}
 	

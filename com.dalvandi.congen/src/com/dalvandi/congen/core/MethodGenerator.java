@@ -72,7 +72,8 @@ public class MethodGenerator {
 		
 		//Add method's postconditions
 		ASTTreeNode postcondition = new ASTTreeNode("Method Postcondition", "", 9543);//
-		postcondition.addNewChild(contract.getMethodPostconditionsNode());
+		//postcondition.addNewChild(contract.getMethodPostconditionsNode());
+		postcondition.addNewChild(contract.getPostconditions());
 		mtd.addNewChild(postcondition);
 
 						

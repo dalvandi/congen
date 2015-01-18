@@ -2,9 +2,11 @@ package com.dalvandi.congen.core;
 
 import java.util.ArrayList;
 
+import org.eventb.core.IAction;
 import org.eventb.core.IEvent;
 import org.eventb.core.IGuard;
 import org.eventb.core.IMachineRoot;
+import org.eventb.core.ast.Assignment;
 import org.eventb.core.ast.FormulaFactory;
 import org.eventb.core.ast.FreeIdentifier;
 import org.eventb.core.ast.IParseResult;
@@ -34,19 +36,21 @@ public class ContractGenerator {
 			events = evts;
 			variables = vars;
 			types = t;
-			commonguards = findCommonGuards();
+			commonguards = getCommonGuards();
 			if(tag == 9997) // If invariant node is empty
 			{
 				valid = false;
 			}
 			else
 				valid = true;
+			
+
 		}
 		
 
 		
 		
-		private ArrayList<IGuard> findCommonGuards() throws RodinDBException {
+		private ArrayList<IGuard> getCommonGuards() throws RodinDBException {
 			ArrayList<IGuard> commonguardslist = new ArrayList<IGuard>();
 			
 			if(events.size()>=1)
@@ -114,17 +118,18 @@ public class ContractGenerator {
 
 
 
-
+		//Returns method's preconditions
 		public ASTTreeNode getMethodPreconditionNode() throws RodinDBException
 		{
 			
-			ASTTreeNode n;
-			ASTTreeNode pre = new ASTTreeNode("Precondition", "", 9600);
+			ASTTreeNode n = new ASTTreeNode("Next Line", "", 9995);
 			boolean isAnyPre = false;
 			
 			if(valid)
 			{
+				ASTTreeNode pre = new ASTTreeNode("Precondition", "", 9600);
 				pre.addNewChild(new ASTTreeNode("Valid", "Valid()", 1));
+				n.addNewChild(pre);
 				isAnyPre = true;
 			}
 			
@@ -140,15 +145,17 @@ public class ContractGenerator {
 							if(!isTyping(g) && !isOutput(g) && !hasInternalPar(g))
 							{
 								ASTBuilder tree = new ASTBuilder(variables, types);
+								ASTTreeNode pre = new ASTTreeNode("Precondition", "", 9600);
 								pre.addNewChild(tree.treeBuilder(g.getPredicateString(), machine));
+								n.addNewChild(pre);
 								isAnyPre = true;
+
 							}
 													
 						}
 					}
 				}
-			}
-			
+			}		
 			else if(events.size() > 1)
 			{
 				for(IGuard g : commonguards)
@@ -156,7 +163,9 @@ public class ContractGenerator {
 					ASTBuilder tree = new ASTBuilder(variables, types);
 					if(!isTyping(g) && !isOutput(g))
 					{
+						ASTTreeNode pre = new ASTTreeNode("Precondition", "", 9600);
 						pre.addNewChild(tree.treeBuilder(g.getPredicateString(), machine));
+						n.addNewChild(pre);
 						isAnyPre = true;
 					}
 				}
@@ -164,13 +173,11 @@ public class ContractGenerator {
 			
 			if(isAnyPre)
 			{
-				n = new ASTTreeNode("Next Line", "", 9995);
-				n.addNewChild(pre);
+				return n;
 			}
 			else
-				 n = new ASTTreeNode("Empty Node", "", 9997);
+				 return new ASTTreeNode("Empty Node", "", 9997);
 			
-			return n;
 		}
 		
 		
@@ -225,8 +232,67 @@ public class ContractGenerator {
 			return nl;
 						
 		}
+		
+		public ASTTreeNode getPostconditions() throws RodinDBException
+		{
+			ASTTreeNode and = new ASTTreeNode("AND", "", 351);
+			ASTTreeNode post = new ASTTreeNode("Post", "", 9601);
 
-		private boolean isTyping(IGuard g) throws RodinDBException {
+			if(events.size() == 1)
+			{
+				String evt = events.get(0);
+				for(IEvent e : machine.getEvents())
+				{
+					if(evt.contentEquals(e.getLabel()))
+					{
+
+						for(IAction act : e.getActions())
+						{
+							ASTTreeNode banode = getBeforeAfterPredicateTree(act);
+							and.addNewChild(banode);
+						}
+					}
+				}
+			}
+			else
+			{}
+			
+			post.addNewChild(and);
+			return post;
+			
+		}
+
+		private ASTTreeNode getBeforeAfterPredicateTree(IAction act) throws RodinDBException {
+			ASTBuilder tree = new ASTBuilder(variables, types);
+			ASTTreeNode assignmentnode = tree.treeBuilder(act.getAssignmentString(), machine);
+			markOldVariables(assignmentnode.children.get(1));
+			if(assignmentnode.tag == 6)
+				assignmentnode.tag = 101;
+			
+			return assignmentnode;
+		}
+
+
+
+
+	private void markOldVariables(ASTTreeNode node) {
+		
+		if(variables.contains(node.getContent()))
+		{
+			node.isOld = true;
+		}
+	
+		for(ASTTreeNode n : node.children)
+		{
+			markOldVariables(n);
+		}
+			
+		}
+
+
+
+
+	private boolean isTyping(IGuard g) throws RodinDBException {
 			
 			ASTBuilder tree = new ASTBuilder(variables, types);
 			ASTTreeNode node = tree.treeBuilder(g.getPredicateString(), machine);
