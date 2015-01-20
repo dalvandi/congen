@@ -6,13 +6,12 @@ import org.eventb.core.IAction;
 import org.eventb.core.IEvent;
 import org.eventb.core.IGuard;
 import org.eventb.core.IMachineRoot;
-import org.eventb.core.ast.Assignment;
+import org.eventb.core.IParameter;
 import org.eventb.core.ast.FormulaFactory;
 import org.eventb.core.ast.FreeIdentifier;
 import org.eventb.core.ast.IParseResult;
 import org.eventb.core.ast.LanguageVersion;
 import org.eventb.core.ast.Predicate;
-import org.eventb.core.ast.RelationalPredicate;
 import org.rodinp.core.RodinDBException;
 
 public class ContractGenerator {
@@ -20,6 +19,7 @@ public class ContractGenerator {
 	private static IMachineRoot machine;
 	private static boolean valid;
 	private static ArrayList<IGuard> commonguards;
+	private static ArrayList<String> commonguards_str;
 	private static ArrayList<String> parameters;
 	private static ArrayList<String> parameters_out;
 	private static ArrayList<String> events;
@@ -43,7 +43,11 @@ public class ContractGenerator {
 			}
 			else
 				valid = true;
-			
+			commonguards_str = new ArrayList<String>();
+			for(IGuard g: commonguards)
+			{
+				commonguards_str.add(g.getPredicateString());
+			}
 
 		}
 		
@@ -80,7 +84,6 @@ public class ContractGenerator {
 
 
 		private boolean isCommonGuard(IGuard g) throws RodinDBException {
-			// TODO Auto-generated method stub
 			int cg = 0;
 			for(IEvent e : machine.getEvents())
 				{
@@ -103,11 +106,9 @@ public class ContractGenerator {
 
 
 		private boolean guardExists(IGuard g, IGuard[] grds) throws RodinDBException {
-			// TODO Auto-generated method stub
 			for(IGuard grd: grds)
 			{
 				
-				//if(grd.equals(g))
 				if(grd.getPredicateString().equals(g.getPredicateString()))
 				{
 					return true;
@@ -183,84 +184,197 @@ public class ContractGenerator {
 		
 
 		private boolean hasInternalPar(IGuard g) throws RodinDBException {
-			// TODO Auto-generated method stub
+
 			FormulaFactory ff = machine.getFormulaFactory();
 			IParseResult parseResult = ff.parsePredicate(g.getPredicateString(), LanguageVersion.LATEST, null);
 			Predicate p = parseResult.getParsedPredicate();
-			if(p instanceof RelationalPredicate)
-			{
 				for(FreeIdentifier id : ((Predicate) p).getFreeIdentifiers())
 				{
-					if(!parameters.contains(id.toString()) && !parameters_out.contains(id.toString()) && !variables.contains(id.toString()))
+					if(!parameters.contains(id.toString()) && !parameters_out.contains(id.toString()) && !variables.contains(id.toString()) && !types.contains(id.toString()))
 					{
 						return true;
 					}
 				}
-			}
 
 			return false;
 		}
 
 
 
-
-		public ASTTreeNode getMethodPostconditionsNode() {
-
-			ASTTreeNode nl = new ASTTreeNode("Next Line", "", 9995);
-			AssertionTreeBuilder pctree = new AssertionTreeBuilder(variables, types);			//Build AST tree for 
-			try {
-				for(IEvent evt: machine.getEvents())
-				{
-					for(String e : events)
-						{
-							if(e.contentEquals(evt.getLabel()))
-								{
-									//pcroot = pctree.postConditionTreeBuilder(machine, parameters,evt);
-									ASTTreeNode post = new ASTTreeNode("Post", "", 9601);
-									post.addNewChild(pctree.postConditionTreeBuilder(machine, parameters,parameters_out,evt));
-									nl.addNewChild(post);
-								}
-						}
-					
-				}
-			}
-			catch (RodinDBException e)
-				{
-					e.printStackTrace();
-				}
-			
-			return nl;
-						
-		}
 		
 		public ASTTreeNode getPostconditions() throws RodinDBException
 		{
-			ASTTreeNode and = new ASTTreeNode("AND", "", 351);
+			ASTTreeNode or = new ASTTreeNode("OR", "", 352);
 			ASTTreeNode post = new ASTTreeNode("Post", "", 9601);
-
 			if(events.size() == 1)
 			{
-				String evt = events.get(0);
-				for(IEvent e : machine.getEvents())
+				ASTTreeNode and = getEventPostcondition(events.get(0));
+				post.addNewChild(and);
+		}
+			else if(events.size() > 1)
+			{
+				for(String s : events)
 				{
-					if(evt.contentEquals(e.getLabel()))
-					{
+					ASTTreeNode paran = new ASTTreeNode("Paran", "", 9991);
+					paran.addNewChild(getEventPostcondition(s));
+					or.addNewChild(paran);
+				}
+				
+				post.addNewChild(or);
+			}
+			
+			return post;
+			
+		}
 
+		private ASTTreeNode getEventPostcondition(String evt) throws RodinDBException {
+			
+			ASTTreeNode and = new ASTTreeNode("AND", "", 351);
+			ArrayList<String> unchanged_vars = getUnchangedVariables(evt);
+			boolean isExistential = true;
+			
+			for(IEvent e : machine.getEvents())
+			{
+				if(evt.contentEquals(e.getLabel()))
+				{
+				
+					for(IGuard grd: e.getGuards())
+					{
+						if(hasInternalPar(grd))
+						{
+							ASTTreeNode existential = getExistentialQuantifier(e);
+							markOldVariables(existential); /// old
+
+							if(isExistential)
+							{
+								and.addNewChild(existential);
+								isExistential = false;
+							}
+
+						}
+					}
+					
+					for(IGuard grd: e.getGuards())
+					{
+						if(!isOutput(grd) && !isTyping(grd) && !commonguards_str.contains(grd.getPredicateString()) && !hasInternalPar(grd))
+						{
+							ASTBuilder tree = new ASTBuilder(variables, types);
+							ASTTreeNode grdtree = tree.treeBuilder(grd.getPredicateString(), machine);
+							markOldVariables(grdtree); /// old
+							and.addNewChild(grdtree);
+						}
+					}
+					
+					for(IAction act : e.getActions())
+					{
+						ASTTreeNode banode = getBeforeAfterPredicateTree(act);
+						and.addNewChild(banode);
+					}
+					
+					for(String s : unchanged_vars)
+					{
+						ASTTreeNode equal = new ASTTreeNode("Equal", "", 101);
+						equal.addNewChild(new ASTTreeNode("Free Identifier", s, 1));
+						ASTTreeNode oldid = new ASTTreeNode("Free Identifier", s, 1);
+						oldid.isOld = true;
+						equal.addNewChild(oldid);
+						and.addNewChild(equal);
+					}
+					
+					for(IGuard grd: e.getGuards())
+					{
+						if(isOutput(grd) && !isTyping(grd))
+						{
+							ASTBuilder tree = new ASTBuilder(variables, types);
+							ASTTreeNode grdtree = tree.treeBuilder(grd.getPredicateString(), machine);
+							markOldVariables(grdtree); /// old
+							and.addNewChild(grdtree);
+						}
+					}
+
+				}
+			}
+			return and;
+		}
+
+
+
+
+		private ArrayList<String> getUnchangedVariables(String evt) throws RodinDBException {
+
+			ArrayList<String> unchanged_vars = new ArrayList<String>();
+			
+			for(IEvent e : machine.getEvents())
+			{
+				if(evt.contentEquals(e.getLabel()))
+				{
+					for(String var : variables)
+					{
+						boolean isChanged = false;
 						for(IAction act : e.getActions())
 						{
-							ASTTreeNode banode = getBeforeAfterPredicateTree(act);
-							and.addNewChild(banode);
+							ASTBuilder tree = new ASTBuilder(variables, types);
+							ASTTreeNode assignmentnode = tree.treeBuilder(act.getAssignmentString(), machine);
+							if(var.equals(assignmentnode.children.get(0).getContent()))
+							{
+								isChanged = true;
+							}
+						}
+						if(!isChanged)
+						{
+							unchanged_vars.add(var);
 						}
 					}
 				}
 			}
-			else
-			{}
 			
-			post.addNewChild(and);
-			return post;
-			
+			return unchanged_vars;
 		}
+
+
+
+
+		private ASTTreeNode getExistentialQuantifier(IEvent e) throws RodinDBException {
+			ArrayList<String> internals = getInternalParameters(e);
+			ASTTreeNode exists = new ASTTreeNode("Exists", "", 852);
+			ASTTreeNode boundIds = new ASTTreeNode("Comma", "", 9996);
+			ASTTreeNode and = new ASTTreeNode("AND", "", 351);
+			for(String s : internals)
+			{
+				boundIds.addNewChild(new ASTTreeNode("Free Identifier", s, 1));
+			}
+			exists.addNewChild(boundIds);
+			for(IGuard g : e.getGuards())
+			{
+				if(hasInternalPar(g) && !isTyping(g))
+				{
+					ASTBuilder tree = new ASTBuilder(variables, types);
+					ASTTreeNode grdtree = tree.treeBuilder(g.getPredicateString(), machine);
+					and.addNewChild(grdtree);
+				}
+			}
+			exists.addNewChild(and);
+			return exists;
+		}
+
+
+
+
+		private ArrayList<String> getInternalParameters(IEvent e) throws RodinDBException {
+			// TODO Auto-generated method stub
+			ArrayList<String> internals = new ArrayList<String>();
+			for(IParameter p :e.getParameters())
+			{
+				if(!parameters.contains(p.getIdentifierString()) && !parameters_out.contains(p.getIdentifierString()))
+				{
+					internals.add(p.getIdentifierString());
+				}
+			}
+			return internals;
+		}
+
+
+
 
 		private ASTTreeNode getBeforeAfterPredicateTree(IAction act) throws RodinDBException {
 			ASTBuilder tree = new ASTBuilder(variables, types);
@@ -369,4 +483,35 @@ public class ContractGenerator {
 			return postconditions;
 			
 		}
+		
+		@Deprecated 
+		public ASTTreeNode getMethodPostconditionsNode() {
+
+			ASTTreeNode nl = new ASTTreeNode("Next Line", "", 9995);
+			AssertionTreeBuilder pctree = new AssertionTreeBuilder(variables, types);			//Build AST tree for 
+			try {
+				for(IEvent evt: machine.getEvents())
+				{
+					for(String e : events)
+						{
+							if(e.contentEquals(evt.getLabel()))
+								{
+									//pcroot = pctree.postConditionTreeBuilder(machine, parameters,evt);
+									ASTTreeNode post = new ASTTreeNode("Post", "", 9601);
+									post.addNewChild(pctree.postConditionTreeBuilder(machine, parameters,parameters_out,evt));
+									nl.addNewChild(post);
+								}
+						}
+					
+				}
+			}
+			catch (RodinDBException e)
+				{
+					e.printStackTrace();
+				}
+			
+			return nl;
+						
+		}
+
 }

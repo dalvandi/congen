@@ -8,15 +8,11 @@ import org.eventb.core.IGuard;
 import org.eventb.core.IMachineRoot;
 import org.eventb.core.IParameter;
 import org.eventb.core.IVariable;
-import org.eventb.core.ast.AssociativePredicate;
-import org.eventb.core.ast.Expression;
 import org.eventb.core.ast.FormulaFactory;
 import org.eventb.core.ast.FreeIdentifier;
 import org.eventb.core.ast.IParseResult;
 import org.eventb.core.ast.LanguageVersion;
 import org.eventb.core.ast.Predicate;
-import org.rodinp.core.IAttributeValue;
-import org.rodinp.core.IRodinElement;
 import org.rodinp.core.RodinDBException;
 
 public class AssertionTreeBuilder extends ASTBuilder {

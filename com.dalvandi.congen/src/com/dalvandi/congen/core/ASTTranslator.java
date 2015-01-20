@@ -99,9 +99,9 @@ public class ASTTranslator {
 		translation_nmap.put(4, new TranslationRules(LITERAL,0,"",false));
 		translation_nmap.put(5, new TranslationRules(EXTENDEDOPERATOR,0,"arg1",false)); //Set
 		translation_nmap.put(6, new TranslationRules(MATHOPERATOR,0," := ",false)); // Assignment
-		translation_nmap.put(401, new TranslationRules(MATHOPERATOR,0," int ",false)); // int
-		translation_nmap.put(402, new TranslationRules(MATHOPERATOR,0," nat ",false)); // nat
-		translation_nmap.put(404, new TranslationRules(MATHOPERATOR,0," bool ",false)); // bool
+		translation_nmap.put(401, new TranslationRules(MATHOPERATOR,0,"int",false)); // int
+		translation_nmap.put(402, new TranslationRules(MATHOPERATOR,0,"nat",false)); // nat
+		translation_nmap.put(404, new TranslationRules(MATHOPERATOR,0,"bool",false)); // bool
 		translation_nmap.put(306, new TranslationRules(MATHOPERATOR,0," + ",false)); // Sum
 		translation_nmap.put(307, new TranslationRules(MATHOPERATOR,0," * ",false)); // Product
 		translation_nmap.put(222, new TranslationRules(MATHOPERATOR,0," - ",false)); // Minus
@@ -119,7 +119,7 @@ public class ASTTranslator {
 		translation_nmap.put(252, new TranslationRules(MATHOPERATOR,0," <==> ",false)); // Equivalence
 		translation_nmap.put(701, new TranslationRules(MATHOPERATOR,0," ! ",false)); // Negation
 		translation_nmap.put(851, new TranslationRules(EXTENDEDOPERATOR,0,"(forall arg1 :: arg2)",false)); // For all		//TODO
-		translation_nmap.put(852, new TranslationRules(EXTENDEDOPERATOR,0,"(exists arg1 :: arg2)",false)); // Exists		//TODO
+		translation_nmap.put(852, new TranslationRules(EXTENDEDOPERATOR,0,"exists arg1 :: arg2",false)); // Exists		//TODO
 		translation_nmap.put(101, new TranslationRules(MATHOPERATOR,0," == ",false)); // Equality
 		translation_nmap.put(102, new TranslationRules(MATHOPERATOR,0," != ",false)); // Inequality
 		translation_nmap.put(407, new TranslationRules(MATHOPERATOR,0," {} ",false)); // Empty set		// what about sequences???
@@ -145,6 +145,7 @@ public class ASTTranslator {
 
 		translation_nmap.put(9990, new TranslationRules(MATHOPERATOR,0,"ND",false)); // Next line
 		translation_nmap.put(9991, new TranslationRules(EXTENDEDOPERATOR,0,"(arg1)",false)); // parentheses
+		translation_nmap.put(9992, new TranslationRules(MATHOPERATOR,0,"\b\b",false)); // Backspace
 		translation_nmap.put(9995, new TranslationRules(MATHOPERATOR,0,"\n",false)); // Next line
 		translation_nmap.put(9996, new TranslationRules(MATHOPERATOR,0,",",false)); // comma
 		translation_nmap.put(9997, new TranslationRules(MATHOPERATOR,0,"",false)); // Empty Node
