@@ -8,6 +8,11 @@
             id="constructorstatement"
             name="Constructor Statement">
       </internalElementType>
+      <internalElementType
+            class="com.dalvandi.congen.basis.SCConstructorStatement"
+            id="scconstructorstatement"
+            name="Static Checked Constructor Statement">
+      </internalElementType>
    </extension>
    <extension
          point="org.rodinp.core.attributeTypes">
@@ -25,6 +30,41 @@
                typeId="com.dalvandi.congen.constructorstatement">
          </childType>
       </relationship>
+   </extension>
+   <extension
+         point="org.eventb.core.pogModuleTypes">
+      <processorType
+            class="com.dalvandi.congen.pogen.POGenerator"
+            id="poGenerator"
+            name="PO GENERATOR"
+            parent="org.eventb.core.machineModule">
+                     <prereq
+               id="org.eventb.core.fwdMachineCommitHypothesesModule">
+         </prereq>
+            
+      </processorType>
+   </extension>
+   <extension
+         point="org.eventb.core.scModuleTypes">
+      <processorType
+            class="com.dalvandi.com.congen.modules.MachineCSModule"
+            id="machineCSModule"
+            name="Machine SC Constructor Statement Module"
+            parent="org.eventb.core.machineModule">
+      </processorType>
+   </extension>
+   <extension
+         point="org.eventb.core.configurations">
+      <configuration
+            id="csConfig"
+            name="ConGen Reasoning Plug-in (SC and POG) Configurationtion">
+         <pogModule
+               id="com.dalvandi.congen.poGenerator">
+         </pogModule>
+         <scModule
+               id="com.dalvandi.congen.machineCSModule">
+         </scModule>
+      </configuration>
    </extension>
 
 </plugin>

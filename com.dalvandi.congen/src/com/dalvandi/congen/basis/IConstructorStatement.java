@@ -7,7 +7,9 @@ import org.rodinp.core.RodinCore;
 
 import com.dalvandi.congen.Activator;
 
+//public interface IConstructorStatement extends ICommentedElement, IExpressionElement{
 public interface IConstructorStatement extends ICommentedElement, IExpressionElement{
+
 	IInternalElementType<IConstructorStatement> ELEMENT_TYPE = RodinCore
 			.getInternalElementType(Activator.PLUGIN_ID + ".constructorstatement");
 

@@ -2,6 +2,7 @@ package com.dalvandi.congen;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.rodinp.core.RodinCore;
 
 public class Activator implements BundleActivator {
 
@@ -17,7 +18,9 @@ public class Activator implements BundleActivator {
 	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
 	 */
 	public void start(BundleContext bundleContext) throws Exception {
+		System.out.println("Plugin started...");
 		Activator.context = bundleContext;
+		setProbConfig();
 	}
 
 	/*
@@ -27,5 +30,10 @@ public class Activator implements BundleActivator {
 	public void stop(BundleContext bundleContext) throws Exception {
 		Activator.context = null;
 	}
+	
+	public static void setProbConfig() {
+		RodinCore.addElementChangedListener(new ConfSettor());
+	}
+
 
 }
