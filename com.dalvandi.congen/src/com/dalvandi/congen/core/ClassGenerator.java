@@ -23,6 +23,7 @@ public class ClassGenerator {
 	 * list of its variables, and list of all types in the context. 
 	 * 
 	 */
+	
 	public ClassGenerator(IMachineRoot mch,
 			ArrayList<String> cons,
 			ArrayList<String> vars, ArrayList<String> ty) {
@@ -46,11 +47,7 @@ public class ClassGenerator {
 		//*******Build Tree for Class*********
 		ASTTreeNode class_node = getClassNode();
 		class_node.addNewChild(getClassBodyNode());
-		 
-		//Visualiser v = new Visualiser();
-		//v.visualise(class_node);
-
-		
+		 		
 		AssertionTranslator tr = new AssertionTranslator();
 		String translation = tr.translateASTTree(class_node);
 		buildDafnyFile(machine.getElementName(), translation);
@@ -69,7 +66,6 @@ public class ClassGenerator {
 		String path = machine.getRodinProject().getResource().getLocation().toString();
 		String now = new Date().toString();
 		now = now.replaceAll(":", "-");
-		@SuppressWarnings("unused")
 		boolean dir = new File(path+ "/DafnyContract").mkdirs();
 		BufferedWriter bw = null;
 		try {

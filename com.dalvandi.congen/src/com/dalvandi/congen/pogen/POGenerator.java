@@ -1,5 +1,3 @@
-/*******************************************************************************
- *******************************************************************************/
 package com.dalvandi.congen.pogen;
 
 import java.util.ArrayList;
@@ -32,12 +30,7 @@ import org.rodinp.core.IRodinFile;
 import com.dalvandi.congen.Activator;
 import com.dalvandi.congen.basis.ISCConstructorStatement;
 
-
-/**
- */
-
 public class POGenerator extends POGProcessorModule {
-
 	private ISCMachineRoot root;
 	private static final IModuleType<POGenerator> MODULE_TYPE = POGCore
 			.getModuleType(Activator.PLUGIN_ID
@@ -60,7 +53,7 @@ public class POGenerator extends POGProcessorModule {
 		for(int i = 0 ; i<cs.length; i++){
 			if(!cs[i].getComment().contains("Init()"))
 			{
-			System.out.println(cs[i].getComment() + " - " + cs[i].getElementName() + " :");
+
 			POPredicateGenerator cpo = new POPredicateGenerator(element, repository, cs[i]);
 
 			if(cpo.caseguardsPredicate.size()>0)
@@ -70,6 +63,9 @@ public class POGenerator extends POGProcessorModule {
 				generateOverlap(cpo.caseguardsPredicate, cpo.disjointCaseGuards, cpo.methodname, element, repository, ff, monitor);
 			}
 		}
+		
+		System.out.println("\n\nAll contract generator POs are generated.\n\n");
+
 
 	}
 
@@ -110,7 +106,9 @@ public class POGenerator extends POGProcessorModule {
 				},
 				true,
 				monitor);
+		System.out.println(sequentName + " PO is generated.");
 		j++;
+		
 		}
 
 	}
@@ -150,76 +148,17 @@ public class POGenerator extends POGProcessorModule {
 				true,
 				monitor);
 
-	}
+		System.out.println(sequentName + " PO is generated.");
 
+
+	}
 
 	@Override
 	public void initModule(IRodinElement element,
 			IPOGStateRepository repository, IProgressMonitor monitor)
 			throws CoreException {
+		System.out.println("Proof Obligation Generator started:\n\n");
 
 	}
 
-
-	
-	/*
-	 * 
-	
-			ITypeCheckResult tch = goalPredicate2.typeCheck(repository.getTypeEnvironment());
-		if(tch.getInferredEnvironment()==null)
-			System.out.println("TCH FAILED ");
-		System.out.println("*******************************");
-		System.out.println("Goal PRED: " + goalPredicate2.toString());
-		System.out.println("WD PRED: " + goalPredicate2.getWDPredicate(tch.getInferredEnvironment().getFormulaFactory()).toString());
-		Predicate wdGoal = goalPredicate2.getWDPredicate(tch.getInferredEnvironment().getFormulaFactory());
-		System.out.println("Flatten PRED: " +  goalPredicate2.flatten(ff).toString());
-		System.out.println("*******************************");
-
-
-		//
-		final String goalformula = "\u2203 i \u00B7 i \u2208 1 ‥ seqSize(keys) \u2227 i = seqSize(keys)"; // " (k > 100) \u2228 (k<100)"; //i \u2208 1 ‥ seqSize(keys) \u2227 \u2203 i \u00B7   \u2227 seqElemAccess(keys,i) = k seqElemAccess(keys,i) = k
-		final IParseResult result = ff.parsePredicatePattern(goalformula, LanguageVersion.LATEST, null);//.parseExpression(formula, LanguageVersion.LATEST, null);
-		final Predicate goalPredicate = result.getParsedPredicate();
-
-		final String hypoformula = hypo;
-		final IParseResult hyporesult = ff.parsePredicate(hypoformula, LanguageVersion.LATEST, null);//.parseExpression(formula, LanguageVersion.LATEST, null);
-		final Predicate hypoPredicate = hyporesult.getParsedPredicate();
-
-		//
-		if(hypoPredicate != null)
-			System.out.println("Hypo Pred: " + hypoPredicate.toString());
-		else
-			System.out.println("Hypo Str: " + hypo);	
-		
-		if(goalPredicate != null)
-			System.out.println("Goal Pred: " + goalPredicate2.toString());
-		else
-			System.out.println("Goal Str: " + goal);	
-
-
-
-	final IPOGSource[] sources = new IPOGSource[] {makeSource(IPOSource.DEFAULT_ROLE, element)};
-	final IPORoot target = repository.getTarget();
-	final IMachineHypothesisManager machineHypothesisManager = (IMachineHypothesisManager) repository
-			.getState(IMachineHypothesisManager.STATE_TYPE);
-
-	
-	//
-	final String formula = "{1}";
-	final IParseResult result = ff.parseExpression(formula, LanguageVersion.LATEST, null);//.parseExpression(formula, LanguageVersion.LATEST, null);
-	final Expression csExpression = result.getParsedExpression();
-	//
-	
-	
-	final Predicate finPredicate = ff.makeSimplePredicate(
-			Formula.KFINITE, csExpression, null);
-	
-	createPO(target, "BFN",
-			POGProcessorModule.makeNature("Finiteness of bound"),
-			machineHypothesisManager.getFullHypothesis(),
-			Collections.<IPOGPredicate> emptyList(),
-			makePredicate(finPredicate, element), sources,
-			new IPOGHint[0],
-			machineHypothesisManager.machineIsAccurate(), monitor);
-*/
 }

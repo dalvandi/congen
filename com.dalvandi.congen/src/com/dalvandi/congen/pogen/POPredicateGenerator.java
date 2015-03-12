@@ -1,9 +1,6 @@
 package com.dalvandi.congen.pogen;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eventb.core.ISCEvent;
@@ -30,8 +27,8 @@ public class POPredicateGenerator {
 	private IRodinElement element;
 	private IPOGStateRepository repository;
 	private ISCConstructorStatement iscConstructorStatement;
-	
-	public ArrayList<Predicate> caseguardsPredicate; // TODO: remove this
+	public ArrayList<Predicate> caseguardsPredicate; 
+	public ArrayList<Predicate> methodguardsPredicate;
 	public ArrayList<String> methodguards;
 	public String methodname;
 	public ArrayList<Predicate> disjointCaseGuards;
@@ -46,43 +43,36 @@ public class POPredicateGenerator {
 			element = e;
 			repository = r;
 			iscConstructorStatement = isc;
-			generateHypoGoal();
 			genereteHypoGoalPredicate();
 	}
 	
-	
 	private void genereteHypoGoalPredicate() throws CoreException
 	{
-		ArrayList<String> events = getEvents(iscConstructorStatement.getComment());
-		ArrayList<String> par_in = getMethodInParameters(iscConstructorStatement.getComment());
-		ArrayList<String> par_out = getMethodOutParameters(iscConstructorStatement.getComment());
-		ArrayList<Predicate> method_guards = getMethodGuardsPredicate(events,par_in, par_out);
-		ArrayList<Predicate> case_guards = getCaseGuardsPredicate(events,method_guards, par_in, par_out);
-		methodname = getMethodName(iscConstructorStatement.getComment());
-		caseguardsPredicate = case_guards;
+		methodname = iscConstructorStatement.getMethodName();
+		ArrayList<String> events = iscConstructorStatement.getListedEvents();
+		ArrayList<String> par_in = iscConstructorStatement.getMethodInParameters();
+		ArrayList<String> par_out = iscConstructorStatement.getMethodOutParameters();
+		methodguards = getMethodGuards(events,par_in, par_out);
+		methodguardsPredicate = getMethodGuardsPredicate(events,par_in, par_out);
+		caseguardsPredicate = getCaseGuardsPredicate(events,methodguardsPredicate, par_in, par_out);
 		
 		
-		if(case_guards.size()>1)
+		if(caseguardsPredicate.size()>1)
 		{
-			goalPredicate = repository.getFormulaFactory().makeAssociativePredicate(Formula.LOR, case_guards, null);
-			singlePredicate = getSinglePredicate(method_guards, goalPredicate, par_in);
-			disjointCaseGuards = getdisjointCaseGuards(method_guards,case_guards,par_in);
-			for(Predicate p : disjointCaseGuards)
-			{
-				System.out.println("Disjoint PO: " + p.toString());
-			}
+			goalPredicate = repository.getFormulaFactory().makeAssociativePredicate(Formula.LOR, caseguardsPredicate, null);
+			singlePredicate = getSinglePredicate(methodguardsPredicate, goalPredicate, par_in);
+			disjointCaseGuards = getdisjointCaseGuards(methodguardsPredicate,caseguardsPredicate,par_in);
+	
 		}
-		else if(case_guards.size() == 1)
+		else if(caseguardsPredicate.size() == 1)
 		{
-			goalPredicate = case_guards.get(0);
-			singlePredicate = getSinglePredicate(method_guards, goalPredicate, par_in);
+			goalPredicate = caseguardsPredicate.get(0);
+			singlePredicate = getSinglePredicate(methodguardsPredicate, goalPredicate, par_in);
 
 		}
 		
 	
 	}
-	
-	
 	
 	private ArrayList<Predicate> getdisjointCaseGuards(
 			ArrayList<Predicate> method_guards,
@@ -149,8 +139,6 @@ public class POPredicateGenerator {
 		
 		return disjoint;
 	}
-
-
 	
 	private ArrayList<BoundIdentDecl> getBoundIdentifiers(
 			ArrayList<String> par) throws CoreException {
@@ -162,15 +150,10 @@ public class POPredicateGenerator {
 		return bound;
 	}
 
-
 	private Predicate getSinglePredicate(ArrayList<Predicate> method_guards,
 			Predicate goalPredicate2, ArrayList<String> par_in) throws CoreException {
 		
-		ArrayList<BoundIdentDecl> bound = new ArrayList<BoundIdentDecl>();
-		for(String i : par_in)
-		{
-			bound.add(repository.getFormulaFactory().makeBoundIdentDecl(i, null));
-		}
+		ArrayList<BoundIdentDecl> bound = getBoundIdentifiers(par_in);
 		
 		Predicate andHypoPredicate;
 		
@@ -187,10 +170,7 @@ public class POPredicateGenerator {
 			implication = repository.getFormulaFactory().makeBinaryPredicate(Formula.LIMP, andHypoPredicate, goalPredicate2, null);
 		else
 			implication = goalPredicate2;
-		
-		
-		
-		
+			
 		
 		ArrayList<FreeIdentifier> fid = new ArrayList<FreeIdentifier>();
 		
@@ -213,7 +193,6 @@ public class POPredicateGenerator {
 		
 		return forallPred;
 	}
-
 
 	private ArrayList<Predicate> getCaseGuardsPredicate(
 			ArrayList<String> events, ArrayList<Predicate> method_guards,
@@ -297,7 +276,6 @@ public class POPredicateGenerator {
 		return caseguards;
 	}
 
-
 	private ArrayList<Predicate> getMethodGuardsPredicate(
 			ArrayList<String> events, ArrayList<String> par_in,
 			ArrayList<String> par_out) throws RodinDBException, CoreException {
@@ -338,117 +316,6 @@ public class POPredicateGenerator {
 		return methodguard;
 	}
 
-
-	private void generateHypoGoal() throws CoreException
-	{
-		ArrayList<String> events = getEvents(iscConstructorStatement.getComment());
-		ArrayList<String> par_in = getMethodInParameters(iscConstructorStatement.getComment());
-		ArrayList<String> par_out = getMethodOutParameters(iscConstructorStatement.getComment());
-		ArrayList<String> method_guards = getMethodGuards(events,par_in, par_out);
-		ArrayList<String> case_guards = getCaseGuards(events,method_guards, par_in, par_out);
-		String hypo_com = "";
-		String goal_com = "";
-		methodname = getMethodName(iscConstructorStatement.getComment());
-		
-		if(method_guards.size()>1)
-		for(int i=0 ; i<method_guards.size(); i++)
-		{
-	    	if(i == method_guards.size()-1)
-	    	{
-	    		hypo_com = hypo_com + method_guards.get(i);
-	    	}
-	    	else
-	    	{
-	    		hypo_com = hypo_com + method_guards.get(i) + " \u2227 ";
-
-	    	}
-		}
-		else if(method_guards.size()==1)
-			hypo_com = method_guards.get(0);
-		
-		if(case_guards.size()>1)
-		for(int i=0 ; i<case_guards.size(); i++)
-		{
-	    	if(i == case_guards.size()-1)
-	    	{
-	    		goal_com =  goal_com + "(" + case_guards.get(i) + ")";
-	    	}
-	    	else
-	    	{
-	    		goal_com = goal_com + "(" + case_guards.get(i) + ")" + " \u2228 ";
-
-	    	}
-		}
-		else if(case_guards.size()==1)
-			goal_com = case_guards.get(0);
-		
-		
-		methodguards = method_guards;
-
-	}
-
-	
-	private ArrayList<String> getCaseGuards(ArrayList<String> events, ArrayList<String> methodguards, ArrayList<String> par_in, ArrayList<String> par_out) throws CoreException {
-		ArrayList<ISCEvent> iscevents = getISCEvents(events);
-		ArrayList<String> caseguards = new ArrayList<String>();
-		
-		if(iscevents.size() >= 1)
-		{
-			for(ISCEvent evt : iscevents){
-			ArrayList<String> par = getParameteres(evt.getSCParameters());
-			ArrayList<String> par_int = getInternal(par, par_in, par_out);
-			ArrayList<String> evtcg = new ArrayList<String>(); 
-			String caseg = "";
-			for(ISCGuard g : evt.getSCGuards())
-			{
-				if((containsIntenal(g,par,par_in,par_out) && !containsOutput(g, par, par_in, par_out)) 
-						|| !methodguards.contains(g.getPredicateString()))
-				{
-					evtcg.add(g.getPredicateString());
-				}
-
-			}
-			if(par_int.size()>0)
-			{
-				String exists = "\u2203";
-			    for(int i = 0 ; i <= par_int.size()-1; i++)
-					{
-			    	if(i == par_int.size()-1)
-					 exists = exists + par_int.get(i) + "\u00B7";
-			    	else
-			    	 exists = exists + par_int.get(i) + ", ";
-				}
-				caseg = caseg + exists;
-			}
-			
-			if(evtcg.size()>0)
-			{
-				String and = "";
-			    for(int i = 0 ; i <= evtcg.size()-1; i++)
-					{
-			    	if(i == evtcg.size()-1)
-			    	{
-					 and = and + evtcg.get(i);
-			    	}
-			    	else{
-			    	and = and + evtcg.get(i) + " \u2227 ";
-			    	}
-				}
-			    caseg = caseg + and;
-			}
-			
-			if(caseg != "")
-				caseguards.add(caseg);	
-			
-		}
-			
-		}
-		
-		return caseguards;
-	}
-
-
-
 	private ArrayList<String> getMethodGuards(ArrayList<String> events, ArrayList<String> par_in, ArrayList<String> par_out) throws CoreException {
 		ArrayList<ISCEvent> iscevents = getISCEvents(events);
 		ArrayList<String> methodguard = new ArrayList<String>();
@@ -483,9 +350,6 @@ public class POPredicateGenerator {
 		return methodguard;
 	}
 
-
-
-
 	private boolean containsIntenal(ISCGuard g, ArrayList<String> par, ArrayList<String> par_in,
 			ArrayList<String> par_out) throws RodinDBException, CoreException {
 		
@@ -504,7 +368,6 @@ public class POPredicateGenerator {
 		return false;
 	}
 
-
 	private Predicate getPredicate(ISCGuard g) throws CoreException {
 		
 		FormulaFactory ff = repository.getFormulaFactory();
@@ -513,7 +376,6 @@ public class POPredicateGenerator {
 		
 		return pr;
 	}
-
 
 	private ArrayList<String> getInternal(ArrayList<String> par,
 			ArrayList<String> par_in, ArrayList<String> par_out) {
@@ -528,7 +390,6 @@ public class POPredicateGenerator {
 		
 		return par_int;
 	}
-
 
 	private boolean containsOutput(ISCGuard g, ArrayList<String> par, ArrayList<String> par_in, ArrayList<String> par_out) throws CoreException {
 	
@@ -546,9 +407,6 @@ public class POPredicateGenerator {
 		return false;
 	}
 
-
-
-	
 	private ArrayList<String> getParameteres(ISCParameter[] scParameters) throws RodinDBException {
 
 		ArrayList<String> par = new ArrayList<String>();
@@ -575,92 +433,4 @@ public class POPredicateGenerator {
 
 		return evts;
 	}
-	
-	private ArrayList<String> getEvents(String s) {
-		s = s.replaceAll("\\s","");
-		ArrayList<String> evts = new ArrayList<String>();
-		String type = "\\{([\\s*|\\w*|\\W*|\\S*]+)\\}";
-		Matcher m;
-
-			
-		Pattern p =  Pattern.compile(type);
-		m = p.matcher(s);
-		
-
-		if (m.find())
-		{
-			evts = new ArrayList<String>(Arrays.asList(m.group(1).split(",")));
-		    return evts;
-		}
-		return evts;
-	}
-	
-	private ArrayList<String> getMethodInParameters(String s) {
-
-		int i_ret = s.indexOf("returns");
-		s = (String) s.subSequence(0, i_ret);
-		
-		s = s.replaceAll("\\s","");
-		ArrayList<String> pars = new ArrayList<String>();
-		String type = "\\(([\\s*|\\w*|\\W*|\\S*]+)\\)";
-		Matcher m;
-
-			
-		Pattern p =  Pattern.compile(type);
-		m = p.matcher(s);
-		
-
-		if (m.find())
-		{
-		    pars = new ArrayList<String>(Arrays.asList(m.group(1).split(",")));
-		    return pars;
-		}
-		return pars;
-	}
-	
-	
-	private ArrayList<String> getMethodOutParameters(String s) {
-		
-		int i_ret = s.indexOf("returns");
-		s = (String) s.subSequence(i_ret,s.length());
-		
-		s = s.replaceAll("\\s","");
-		ArrayList<String> pars = new ArrayList<String>();
-		String type = "\\(([\\s*|\\w*|\\W*|\\S*]+)\\)";
-		Matcher m;
-
-			
-		Pattern p =  Pattern.compile(type);
-		m = p.matcher(s);
-		
-
-		if (m.find())
-		{
-		    pars = new ArrayList<String>(Arrays.asList(m.group(1).split(",")));
-		    return pars;
-		}
-		return pars;
-	}
-	
-	private String getMethodName(String s) {
-		//method $name($a,$b) returns ($c,$d) = {$ev1, $ev2}
-		int i_ret = s.indexOf("returns");
-		s = (String) s.subSequence(0, i_ret);
-
-		String type = "method ([\\s*|\\w*|\\W*|\\S*]+)\\(";
-		Matcher m;
-
-			
-		Pattern p =  Pattern.compile(type);
-		m = p.matcher(s);
-		
-		if (m.find())
-		{
-		    return m.group(1);
-		}
-		else
-			return "ND";
-		
-	}
-
 }
