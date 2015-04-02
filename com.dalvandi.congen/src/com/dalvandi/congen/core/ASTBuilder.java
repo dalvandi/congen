@@ -206,12 +206,12 @@ public class ASTBuilder {
 		}
 		else if(in instanceof BecomesMemberOf)
 		{
-			// TODO
+			// TODO implementing BecomesMemberOf
 		}
 		
 		else if(in instanceof BecomesSuchThat)
 		{
-			// TODO
+			// TODO implementing BecomesSuchThat
 		}
 		
 		

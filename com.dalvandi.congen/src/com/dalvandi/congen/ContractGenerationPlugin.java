@@ -12,6 +12,7 @@ import java.util.ArrayList;
 
 import com.dalvandi.congen.basis.IConstructorStatement;
 import com.dalvandi.congen.core.*;
+
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
@@ -46,6 +47,7 @@ public class ContractGenerationPlugin implements IObjectActionDelegate {
 		ArrayList<String> constructorstatements = getConstructorStatements();
 		
 		IMachineRoot machine = getCurrentMachine();
+		
 		ClassGenerator cls = new ClassGenerator(machine, constructorstatements, variables, types);
 		
 	    try {

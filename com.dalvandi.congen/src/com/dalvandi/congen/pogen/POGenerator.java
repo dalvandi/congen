@@ -26,7 +26,6 @@ import org.eventb.core.pog.state.IPOGStateRepository;
 import org.eventb.core.tool.IModuleType;
 import org.rodinp.core.IRodinElement;
 import org.rodinp.core.IRodinFile;
-
 import com.dalvandi.congen.Activator;
 import com.dalvandi.congen.basis.ISCConstructorStatement;
 
@@ -61,12 +60,63 @@ public class POGenerator extends POGProcessorModule {
 			
 			if(cpo.disjointCaseGuards != null)
 				generateOverlap(cpo.caseguardsPredicate, cpo.disjointCaseGuards, cpo.methodname, element, repository, ff, monitor);
+		
+			if(cpo.outputPO.size()>0)
+				generateOutput(cpo.outputPO, cpo.methodname, element, repository, ff, monitor);
 			}
+			
+		
 		}
 		
 		System.out.println("\n\nAll contract generator POs are generated.\n\n");
 
 
+	}
+
+	private void generateOutput(ArrayList<Predicate> outputPO,
+			String methodname, IRodinElement element,
+			IPOGStateRepository repository, FormulaFactory ff,
+			IProgressMonitor monitor) throws CoreException {
+	
+		final IPOGSource[] sources = new IPOGSource[] {makeSource(IPOSource.DEFAULT_ROLE, element),
+				makeSource(IPOSource.DEFAULT_ROLE, element)};
+		final IPORoot target = repository.getTarget();
+		final IMachineHypothesisManager machineHypothesisManager = (IMachineHypothesisManager) repository
+				.getState(IMachineHypothesisManager.STATE_TYPE);
+		
+		IPOPredicateSet hyp = target.getPredicateSet("ABSHYP");
+		List<IPOGPredicate> invariants = new ArrayList<IPOGPredicate>();
+		ISCPredicateElement inv[] = root.getSCInvariants();
+		for(ISCPredicateElement i : inv)
+		{
+			if(!((ISCInvariant)i).getLabel().contains("g_")){
+				 IParseResult hyporesult = ff.parsePredicate(i.getPredicateString(), LanguageVersion.LATEST, null);
+				 Predicate hPredicate =  hyporesult.getParsedPredicate();
+				 invariants.add(makePredicate(hPredicate, element));
+			}			
+		}
+		int j = 1;
+		for(int i = 0; i <outputPO.size(); i++)
+		{
+		String sequentName = methodname + "/OUT/FIS"+j;
+		createPO(target, 
+				sequentName,
+				POGProcessorModule.makeNature("Case_Disjoint_Proof_Obligation"),
+				machineHypothesisManager.getRootHypothesis(),
+				invariants,
+				makePredicate(outputPO.get(i), element), 
+				sources,
+				new IPOGHint[] {
+				makeIntervalSelectionHint(hyp, getSequentHypothesis(target, sequentName))
+				},
+				true,
+				monitor);
+		System.out.println(sequentName + " PO is generated.");
+		j++;
+		
+		}
+
+		
 	}
 
 	private void generateOverlap(ArrayList<Predicate> caseguardsPredicate,

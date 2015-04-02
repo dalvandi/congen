@@ -23,6 +23,18 @@ public class MethodGenerator {
 			ArrayList<String> metpar_in = getMethodInParameters(s);
 			ArrayList<String> metpar_out = getMethodOutParameters(s);
 			ArrayList<String> events = getMethodEvents(s);
+			
+			System.out.println("Method: " + mtdname);
+
+			System.out.println("input: ");
+			for(String st : metpar_in)
+				System.out.println(st);
+			
+			System.out.println("output: ");
+			for(String st : metpar_out)
+				System.out.println(st);
+
+			
 			ASTTreeNode mtd = getMethodNode(mch, vars, types, mtdname, metpar_in, metpar_out, events, tag);
 			methods.addNewChild(mtd);
 
@@ -91,7 +103,7 @@ public class MethodGenerator {
 		{
 		AssertionTreeBuilder astTree = new AssertionTreeBuilder(vars, types);
 		String evt = events.get(0);
-		methodtypes = astTree.methodTypingTreeBuilder(mch, metpar,metpar_out, evt);
+		methodtypes = astTree.getTypingGuards(mch, evt, metpar);
 		}
 		else
 			methodtypes = new ASTTreeNode("EMPTY", "" , 9997);
@@ -108,7 +120,7 @@ public class MethodGenerator {
 		{
 		AssertionTreeBuilder astTree = new AssertionTreeBuilder(vars, types);
 		String evt = events.get(0);
-		methodtypes = astTree.methodTypingTreeBuilder(mch, metpar_out,metpar, evt);
+		methodtypes = astTree.getTypingGuards(mch, evt, metpar_out);
 		}
 		else
 			methodtypes = new ASTTreeNode("EMPTY", "" , 9997);

@@ -210,11 +210,6 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		}
 	}
 	
-	
-	
-	
-
-
 	private void postConditionTreeAddMetaData(ASTTreeNode node,
 			ArrayList<String> variables, ArrayList<String> parameters) {
 
@@ -275,8 +270,76 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		}
 	}
 
+	public ASTTreeNode getTypingGuards(IMachineRoot mch, String event, ArrayList<String> par) throws RodinDBException
+	{
+		ASTTreeNode typingtree = new ASTTreeNode("coma", "," , 9996);
+		IEvent evt = null;
+		for(IEvent e : mch.getEvents())
+		{
+			if(e.getLabel().equals(event))
+			{
+				evt = e;
+			}
+		}
+
+		for(IGuard g : evt.getGuards())
+		{
+			ASTTreeNode n = this.treeBuilder(g.getPredicateString(), mch);
+			if(isTypingGuard(n))
+			{
+				if(guardsContainPar(mch, g,par))
+				{
+					typingtree.addNewChild(n);
+				}
+			}
+		}
+		
+		
+		return typingtree;
+	}
+	
+	private boolean guardsContainPar(IMachineRoot mch, IGuard g, ArrayList<String> par) throws RodinDBException {
+		
+		if(g.hasPredicateString())
+		{
+			FormulaFactory ff = mch.getFormulaFactory();
+			IParseResult parseResult = ff.parsePredicate(g.getPredicateString(), LanguageVersion.LATEST, null);
+			Predicate p = parseResult.getParsedPredicate();
+			for(FreeIdentifier id : p.getFreeIdentifiers())
+			{
+				if(par.contains(id.toString()))
+					return true;
+			}
+		}
+			
+		return false;
+	}
+
+	private boolean isTypingGuard(ASTTreeNode node) {
+		
+		Types type = new Types();
+		
+		if(node.tag == 107)
+		{
+			if(node.children.size() == 2)
+			{
+				int rhs = node.children.get(1).tag;
+				String rhss = node.children.get(1).getContent();
+				if(type.builtin_types.contains(rhs) || type.extended_types.contains(rhs) || types.contains(rhss))
+				{
+					node.children.get(1).isType = true;
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
+
+	@Deprecated
 	public ASTTreeNode methodTypingTreeBuilder(IMachineRoot machine,
 		ArrayList<String> parameters, ArrayList<String> parameters_out, String evt) throws RodinDBException {
+		//TODO: this method is terrible. it should be change. it generates tree for every typing guard regardless to the rule of parameter
 		ASTTreeNode guardtree = new ASTTreeNode("coma", "," , 9996);
 		IEvent event = null;
 		for(IEvent e : machine.getEvents())
@@ -288,6 +351,7 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		}
 		for(IGuard g : event.getGuards())
 		{
+			//System.out.println(g.getElementType().getName());
 			guardtree.addNewChild(this.treeBuilder(g.getPredicateString(), machine));
 		}
 		

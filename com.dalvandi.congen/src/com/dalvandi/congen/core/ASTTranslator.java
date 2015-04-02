@@ -120,8 +120,8 @@ public class ASTTranslator {
 		translation_nmap.put(251, new TranslationRules(MATHOPERATOR,0," ==> ",false)); // Implication
 		translation_nmap.put(252, new TranslationRules(MATHOPERATOR,0," <==> ",false)); // Equivalence
 		translation_nmap.put(701, new TranslationRules(MATHOPERATOR,0," ! ",false)); // Negation
-		translation_nmap.put(851, new TranslationRules(EXTENDEDOPERATOR,0,"(forall arg1 :: arg2)",false)); // For all		//TODO
-		translation_nmap.put(852, new TranslationRules(EXTENDEDOPERATOR,0,"exists arg1 :: arg2",false)); // Exists		//TODO
+		translation_nmap.put(851, new TranslationRules(EXTENDEDOPERATOR,0,"(forall arg1 :: arg2)",false)); // For all		
+		translation_nmap.put(852, new TranslationRules(EXTENDEDOPERATOR,0,"exists arg1 :: arg2",false)); // Exists	
 		translation_nmap.put(101, new TranslationRules(MATHOPERATOR,0," == ",false)); // Equality
 		translation_nmap.put(102, new TranslationRules(MATHOPERATOR,0," != ",false)); // Inequality
 		translation_nmap.put(407, new TranslationRules(MATHOPERATOR,0," {} ",false)); // Empty set		// what about sequences???
