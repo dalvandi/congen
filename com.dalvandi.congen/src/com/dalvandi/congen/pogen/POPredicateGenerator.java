@@ -80,7 +80,8 @@ public class POPredicateGenerator {
 		
 		ArrayList<Predicate> outguards = new ArrayList<Predicate>();
 
-		if(iscConstructorStatement.getMethodOutParameters().size()>0)
+		//if(iscConstructorStatement.getMethodOutParameters().size()>0)
+		if(true)
 		{
 		ArrayList<ISCEvent> iscevents = getISCEvents(iscConstructorStatement.getListedEvents());
 		ArrayList<String> par_in = iscConstructorStatement.getMethodInParameters();

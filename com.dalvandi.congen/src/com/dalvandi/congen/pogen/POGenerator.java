@@ -73,6 +73,7 @@ public class POGenerator extends POGProcessorModule {
 
 	}
 
+	//Output and Internal Parameter Feasibility Proof Obligations
 	private void generateOutput(ArrayList<Predicate> outputPO,
 			String methodname, IRodinElement element,
 			IPOGStateRepository repository, FormulaFactory ff,
@@ -98,10 +99,10 @@ public class POGenerator extends POGProcessorModule {
 		int j = 1;
 		for(int i = 0; i <outputPO.size(); i++)
 		{
-		String sequentName = methodname + "/OUT/FIS"+j;
+		String sequentName = methodname + "/OUT-INT/FIS"+j;
 		createPO(target, 
 				sequentName,
-				POGProcessorModule.makeNature("Case_Disjoint_Proof_Obligation"),
+				POGProcessorModule.makeNature("Output_Internal_Feasibility_Proof_Obligation"),
 				machineHypothesisManager.getRootHypothesis(),
 				invariants,
 				makePredicate(outputPO.get(i), element), 
@@ -118,7 +119,8 @@ public class POGenerator extends POGProcessorModule {
 
 		
 	}
-
+	
+	//Disjointness Proof Obligations
 	private void generateOverlap(ArrayList<Predicate> caseguardsPredicate,
 			ArrayList<Predicate> disjointCaseGuards, String methodname, IRodinElement element, IPOGStateRepository repository,
 			FormulaFactory ff, IProgressMonitor monitor) throws CoreException {
@@ -163,6 +165,7 @@ public class POGenerator extends POGProcessorModule {
 
 	}
 
+	//Completeness Proof Obligations
 	private void generateCompleteness(Predicate singlePredicate, ArrayList<ISCGuard> iscg, IRodinElement element, IPOGStateRepository repository, FormulaFactory ff, IProgressMonitor monitor, String methodname) throws CoreException {
 		
 		final IPOGSource[] sources = new IPOGSource[] {makeSource(IPOSource.DEFAULT_ROLE, element),

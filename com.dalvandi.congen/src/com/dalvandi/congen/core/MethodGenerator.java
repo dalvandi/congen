@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eventb.core.IMachineRoot;
@@ -84,8 +85,12 @@ public class MethodGenerator {
 		
 		//Add method's postconditions
 		ASTTreeNode postcondition = new ASTTreeNode("Method Postcondition", "", 9543);//
-		//postcondition.addNewChild(contract.getMethodPostconditionsNode());
-		postcondition.addNewChild(contract.getPostconditions());
+				
+		try {
+			postcondition.addNewChild(contract.getPostconditionsNewStyle());;
+		} catch (CoreException e) {
+			e.printStackTrace();
+		} 
 		mtd.addNewChild(postcondition);
 
 						

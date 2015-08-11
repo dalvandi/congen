@@ -16,7 +16,10 @@ import org.eventb.core.ast.Predicate;
 import org.rodinp.core.RodinDBException;
 
 public class AssertionTreeBuilder extends ASTBuilder {
-
+	
+	//TODO This class is almost useless. Look at ContractGenerator class for contranct generation.
+	//Many things are duplicated.
+	
 	private ArrayList<ASTTreeNode> typingnodes;
 	private ArrayList<ASTTreeNode> quantifiernodes;
 	private ArrayList<String> quantifierstr;
@@ -336,6 +339,31 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		return false;
 	}
 
+	private ASTTreeNode removeNonTypingNodes(ASTTreeNode node, ArrayList<String> para, ArrayList<String> parameters_out) {
+
+
+		postConditionTreeTypingNodeFinder(node, null, para,parameters_out);
+		ArrayList<ASTTreeNode> temp = new ArrayList<ASTTreeNode>(node.children);
+		
+		for(ASTTreeNode n : node.children)
+		{
+			if(!typingnodes.contains(n) && !n.children.isEmpty())
+			{
+				temp.remove(n);
+			}
+		}
+		
+		node.children = temp;
+		
+		for(ASTTreeNode n : node.children)
+		{
+			removeNonTypingNodes(n, para,parameters_out);
+		}
+		
+
+		return node;
+	}
+
 	@Deprecated
 	public ASTTreeNode methodTypingTreeBuilder(IMachineRoot machine,
 		ArrayList<String> parameters, ArrayList<String> parameters_out, String evt) throws RodinDBException {
@@ -376,32 +404,7 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		ASTTreeNode typetree = removeNonTypingNodes(guardtree, parameters, parameters_out);
 		
 		return typetree;
-
-	}
-
-	private ASTTreeNode removeNonTypingNodes(ASTTreeNode node, ArrayList<String> para, ArrayList<String> parameters_out) {
-
-
-		postConditionTreeTypingNodeFinder(node, null, para,parameters_out);
-		ArrayList<ASTTreeNode> temp = new ArrayList<ASTTreeNode>(node.children);
-		
-		for(ASTTreeNode n : node.children)
-		{
-			if(!typingnodes.contains(n) && !n.children.isEmpty())
-			{
-				temp.remove(n);
-			}
-		}
-		
-		node.children = temp;
-		
-		for(ASTTreeNode n : node.children)
-		{
-			removeNonTypingNodes(n, para,parameters_out);
-		}
-		
-
-		return node;
+	
 	}
 
 

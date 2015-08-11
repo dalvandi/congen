@@ -10,6 +10,7 @@ import java.util.Date;
 import org.eventb.core.IMachineRoot;
 import org.rodinp.core.RodinDBException;
 
+
 public class ClassGenerator {
 
 	private String classname;
@@ -47,7 +48,7 @@ public class ClassGenerator {
 		//*******Build Tree for Class*********
 		ASTTreeNode class_node = getClassNode();
 		class_node.addNewChild(getClassBodyNode());
-		 		
+		 			
 		AssertionTranslator tr = new AssertionTranslator();
 		String translation = tr.translateASTTree(class_node);
 		buildDafnyFile(machine.getElementName(), translation);
