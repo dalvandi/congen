@@ -48,13 +48,15 @@ public class ContractGenerationPlugin implements IObjectActionDelegate {
 		
 		IMachineRoot machine = getCurrentMachine();
 		
-		ClassGenerator cls = new ClassGenerator(machine, constructorstatements, variables, types);
-		
-	    try {
-			cls.outputGeneratedClass();
-	    	} catch (RodinDBException e) {
+		//ClassGenerator cls = new ClassGenerator(machine, constructorstatements, variables, types);
+		AssertionGenerator asserts = new AssertionGenerator(machine, constructorstatements, variables, types);
+		try {
+			asserts.generateAssertions();
+		} catch (RodinDBException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
-	    	}
+		}
+	    asserts.outputGeneratedAssert();
 		
 	}
 
