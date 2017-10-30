@@ -171,6 +171,11 @@ public class ASTTranslator {
 		translation_nmap.put(9545, new TranslationRules(EXTENDEDOPERATOR,0,"arg1",false)); // Invariant next line
 		translation_nmap.put(9600, new TranslationRules(EXTENDEDOPERATOR,0,"requires arg1;",false)); // Pre-condition
 		translation_nmap.put(9601, new TranslationRules(EXTENDEDOPERATOR,0,"ensures arg1;",false)); // Post-condition
+		
+		
+		//PRiME ASSERGEN
+		translation_nmap.put(10108, new TranslationRules(EXTENDEDOPERATOR,0,"if(std::find_if(arg2.begin(), arg2.end(),[=](std::pair<arg1, std::shared_ptr<prime::uds>> app_sock){return app_sock.first == proc_id;}) != arg2.end())\n throw std::runtime_error(\"SOME USEFULL MESSAGE: arg3\");",false)); // Post-condition
+		translation_nmap.put(10107, new TranslationRules(EXTENDEDOPERATOR,0,"if(std::find_if(arg2.begin(), arg2.end(),[=](std::pair<arg1, std::shared_ptr<prime::uds>> app_sock){return app_sock.first == proc_id;}) == arg2.end())\n throw std::runtime_error(\"SOME USEFULL MESSAGE: arg3\");",false)); // Post-condition
 
 
 
