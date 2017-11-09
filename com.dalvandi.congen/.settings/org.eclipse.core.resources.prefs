@@ -1,2 +1,4 @@
 eclipse.preferences.version=1
+encoding//src/com/dalvandi/congen/core/AssertionGenerator.java=UTF-8
+encoding//src/com/dalvandi/congen/core/AssertionTreeBuilder.java=UTF-8
 encoding//src/com/dalvandi/congen/pogen/POGenerator.java=UTF-8

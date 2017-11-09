@@ -100,6 +100,8 @@ public class AssertionTreeBuilder extends ASTBuilder {
 		return true;
 	}
 
+	
+	
 	private ASTTreeNode postConditionTreeToTranslatableTree(IMachineRoot mch,
 			ArrayList<String> mtdpar, ArrayList<String> mtdpar_out, IEvent evt, ASTTreeNode pcroot) 
 					throws RodinDBException {
