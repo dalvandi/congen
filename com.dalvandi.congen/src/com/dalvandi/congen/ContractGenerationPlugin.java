@@ -121,7 +121,8 @@ public class ContractGenerationPlugin implements IObjectActionDelegate {
 			{
 				if(el instanceof IConstructorStatement)
 				{
-					constats.add(((IConstructorStatement) el).getExpressionString());
+					//constats.add(((IConstructorStatement) el).getExpressionString());
+					constats.add(((IConstructorStatement) el).getComment());
 				}
 			}
 		} catch (RodinDBException e) {

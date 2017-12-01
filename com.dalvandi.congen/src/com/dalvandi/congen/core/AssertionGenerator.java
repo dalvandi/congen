@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.eventb.core.IEvent;
 import org.eventb.core.IGuard;
 import org.eventb.core.IMachineRoot;
@@ -64,11 +66,7 @@ public class AssertionGenerator {
 		
 		ASTTranslator tr = new ASTTranslator();
 		System.out.println(tr.translateASTTree(node));
-		
-
-		
-		
-		
+			
 		return node;
 	}
 	
@@ -79,7 +77,6 @@ public class AssertionGenerator {
 		ASTTreeNode node = tree.treeBuilder("a ∈ b ∧ c ↦ d ∈ e ∧ f = g(c ↦ d) ∧ h ≤ f", machine);
 		//System.out.println(createAsserTree(node));
 		w.treePrinter(node);
-
 	}
 	
 	public void generateAssertions() throws RodinDBException
@@ -91,16 +88,29 @@ public class AssertionGenerator {
 		for(String s : constructorstatement)
 		{	
 			ArrayList<String> events = getMethodEvents(s);
+			String methodName = getMethodName(s);
+			String methodInput = getMethodInParameters(s);
+			ASTTreeNode methodNode = new ASTTreeNode("function", "function", 11500);
+			ASTTreeNode methodNameNode = new ASTTreeNode("methodNameNode", methodName, 1);
+			ASTTreeNode methodInputNode = new ASTTreeNode("methodInputNode", methodInput, 1);
+			methodNode.addNewChild(methodNameNode);
+			methodNode.addNewChild(methodInputNode);
 			for(String e : events){
 				ASTTreeNode n = getAssertionNode(e);
+				methodNode.addNewChild(n);
 				if(n != null)
-				asserts.add(n);
+				asserts.add(methodNode);
 			}
 		}
 		
 		ASTTranslator tr = new ASTTranslator();
-		for(ASTTreeNode n : asserts)
-			System.out.println(tr.translateASTTree(n));
+		for(ASTTreeNode n : asserts){ 
+			String trans = tr.translateASTTree(n);
+			trans = trans.replace("maxx", "max");
+			trans = trans.replace("minn", "min");
+			trans = trans.replace("idd", "id");
+			System.out.println(trans);
+		}
 
 	}
 	
@@ -284,6 +294,58 @@ public class AssertionGenerator {
 		return evts;
 	}
 
+	
+	private String getMethodInParameters(String s) {
+
+		int i_ret = s.indexOf("returns");
+		s = (String) s.subSequence(0, i_ret);
+		
+		//s = s.replaceAll("\\s","");
+		String type = "\\(([\\s*|\\w*|\\W*|\\S*]+)\\)";
+		Matcher m;
+
+			
+		Pattern p =  Pattern.compile(type);
+		m = p.matcher(s);
+		
+
+		if (m.find())
+		{
+		    return m.group(1);
+		}
+		return "";
+	}
+	
+
+	private String getMethodName(String s) {
+		//method $name($a,$b) returns ($c,$d) = {$ev1, $ev2}
+		int i_ret = s.indexOf("returns");
+		s = (String) s.subSequence(0, i_ret);
+
+		String type = "method ([\\s*|\\w*|\\W*|\\S*]+)\\(";
+		Matcher m;
+
+			
+		Pattern p =  Pattern.compile(type);
+		m = p.matcher(s);
+		
+		if (m.find())
+		{
+		    return m.group(1);
+		}
+		
+		else{
+			Shell shell = null;
+			MessageDialog dialog = new MessageDialog(shell, "Invalid Constructor Statement", null,
+				   ""+ s + "\nis an invalid constructor statement. \nA constructor statement must have "
+				    		+ "the following format:\n"
+				    		+ "method $name($par1, $par2,...) = {$evt1, $evt2,...}", MessageDialog.ERROR, new String[] { "Ok",
+	}, 0);
+				dialog.open();
+				return " *ND* ";
+		}
+
+	}
 
 	public void outputGeneratedAssert() {
 		// TODO Auto-generated method stub

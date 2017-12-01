@@ -18,9 +18,6 @@
             <attributeRelation
             elementTypeId="com.dalvandi.congen.constructorstatement">
          <attributeReference
-               descriptionId="org.eventb.ui.expression">
-         </attributeReference>
-         <attributeReference
                descriptionId="org.eventb.ui.comment">
          </attributeReference>
       </attributeRelation>

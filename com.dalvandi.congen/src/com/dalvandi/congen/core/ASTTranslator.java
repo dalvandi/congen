@@ -180,11 +180,13 @@ public class ASTTranslator {
 		translation_nmap.put(11103, new TranslationRules(EXTENDEDOPERATOR,0,"//rule 3 \n if(std::find_if(arg1.begin(),arg1.end(), [=](prime::api::app::arg2 x) {return x.arg3 == arg3;}) != arg1.end())throw std::runtime_error(\"arg4\");",false));
 		translation_nmap.put(11104, new TranslationRules(EXTENDEDOPERATOR,0,"//rule 4 \n if(std::find_if(arg5.begin(),arg5.end(), [=](prime::api::app::arg2 x) {return x.arg4 == arg1.arg4 && x.arg3 == arg1.arg3;})!= arg5.end())throw std::runtime_error(\"arg6\");",false));
 		translation_nmap.put(11105, new TranslationRules(EXTENDEDOPERATOR,0,"//rule 5 \n if(arg1.arg3 > arg1.arg4) throw std::runtime_error(\"arg5\");",false));
-		translation_nmap.put(11106, new TranslationRules(EXTENDEDOPERATOR,0,"//rule 6 \n if(std::find_if(arg5.begin(),arg5.end(), [=](prime::api::app::arg2 x) {return x.arg4 == arg1.arg4 && x.arg3 == arg1.arg3;})!= arg5.end()) throw std::runtime_error(\"arg6\");",false));
+		translation_nmap.put(11106, new TranslationRules(EXTENDEDOPERATOR,0,"//rule 6 \n if(std::find_if(arg5.begin(),arg5.end(), [=](prime::api::app::arg2 x) {return x.arg4 == arg1.arg4 && x.arg3 == arg1.arg3;}) == arg5.end()) throw std::runtime_error(\"arg6\");",false));
 		translation_nmap.put(11107, new TranslationRules(EXTENDEDOPERATOR,0,"//rule 7 \n if(arg1.arg8 >= (*std::find_if(arg5.begin(), arg5.end(), [=](prime::api::app::arg2 x) {return x.arg4 == arg1.arg4 && x.arg3 == arg1.arg3;}).arg6) throw std::runtime_error(\"arg9\");",false));
 		translation_nmap.put(11108, new TranslationRules(EXTENDEDOPERATOR,0,"//rule 8 \n if(arg1.arg8 > (*std::find_if(arg5.begin(), arg5.end(), [=](prime::api::app::arg2 x) {return x.arg4 == arg1.arg4 && x.arg3 == arg1.arg3;}).arg6) throw std::runtime_error(\"arg9\");",false));
 		translation_nmap.put(11109, new TranslationRules(EXTENDEDOPERATOR,0,"//rule 9 \n if(arg1.arg8 <= (*std::find_if(arg5.begin(), arg5.end(), [=](prime::api::app::arg2 x) {return x.arg4 == arg1.arg4 && x.arg3 == arg1.arg3;}).arg6) throw std::runtime_error(\"arg9\");",false));
 		translation_nmap.put(11110, new TranslationRules(EXTENDEDOPERATOR,0,"//rule 10 \n if(arg1.arg8 <= (*std::find_if(arg5.begin(), arg5.end(), [=](prime::api::app::arg2 x) {return x.arg4 == arg1.arg4 && x.arg3 == arg1.arg3;}).arg6) throw std::runtime_error(\"arg9\");",false));
+
+		translation_nmap.put(11500, new TranslationRules(EXTENDEDOPERATOR,0,"void assert_arg1(arg2)\n{\n arg3 \n}",false));
 
 
 		
