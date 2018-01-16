@@ -56,7 +56,7 @@ public class ContractGenerationPlugin implements IObjectActionDelegate {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	    asserts.outputGeneratedAssert();
+	    //asserts.outputGeneratedAssert();
 		
 	}
 

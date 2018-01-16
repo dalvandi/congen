@@ -5,6 +5,7 @@
          point="org.eventb.ui.editorItems">
       <element
             defaultColumn="0"
+            imagePath="icons/sample.gif"
             prefix="CONSTRUCTOR STATEMENTS"
             typeId="com.dalvandi.congen.constructorstatement">
       </element>
@@ -30,13 +31,13 @@
             objectClass="org.eventb.core.IEventBRoot">
          <menu
                id="com.dalvandi.congen.ui.menu"
-               label="Contract Generation"
+               label="Assertion Generation"
                path="additions">
          </menu>
          <action
                class="com.dalvandi.congen.ContractGenerationPlugin"
                id="com.dalvandi.congen.ui.menu.action.ContractGenerationPlugin"
-               label="Generate Dafny Contracts"
+               label="Generate Assertion"
                menubarPath="com.dalvandi.congen.ui.menu/groupA">
          </action>
          <visibility>

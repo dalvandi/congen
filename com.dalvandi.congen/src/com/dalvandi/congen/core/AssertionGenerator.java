@@ -1,7 +1,12 @@
 package com.dalvandi.congen.core;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -103,18 +108,81 @@ public class AssertionGenerator {
 			}
 		}
 		
-		ASTTranslator tr = new ASTTranslator();
+		/*ASTTranslator tr = new ASTTranslator();
 		for(ASTTreeNode n : asserts){ 
 			String trans = tr.translateASTTree(n);
 			trans = trans.replace("maxx", "max");
 			trans = trans.replace("minn", "min");
 			trans = trans.replace("idd", "id");
 			System.out.println(trans);
-		}
+		}*/
+		programText(asserts);
 
 	}
 	
 	
+	private void programText(ArrayList<ASTTreeNode> asserts)
+	{
+		String code = "";
+		
+		code += "#include <iostream> \n";
+		code += "#include \"uds.h\"\n";
+		code += "#include \"util.h\"\n";
+		code += "#include \"prime_api_rtm.h\"\n";
+		code += "#include \"uds.h\"\n";
+		code += "#include \"prime_api_t.h\"\n";
+		code += "#include \"prime_api_app_t.h\"\n";
+		code += "#include \"prime_api_dev_t.h\"\n\n\n";
+		code += "namespace assertion{\n\n\n";
+
+		
+		ASTTranslator tr = new ASTTranslator();
+		for(ASTTreeNode n : asserts){ 
+			String trans = tr.translateASTTree(n);
+			trans = trans.replace("maxx", "max");
+			trans = trans.replace("minn", "min");
+			trans = trans.replace("idd", "id");
+			
+			//this should be corrected
+			trans = trans.replace("app_knobs_disc_t", "knob_disc_t");
+			trans = trans.replace("app_knobs_cont_t", "knob_cont_t");
+			trans = trans.replace("app_mons_cont_t", "mon_cont_t");
+			trans = trans.replace("app_mons_disc_t", "mon_disc_t");
+
+			code = code + trans + "\n\n\n\n";
+		}
+		
+		code += "\n\n}\n";
+		
+		System.out.println(code);
+
+		outputGeneratedAssert(code);
+	}
+
+	private void outputGeneratedAssert(String st)
+	{
+		String path = machine.getRodinProject().getResource().getLocation().toString();
+		String now = new Date().toString();
+		now = now.replaceAll(":", "-");
+		boolean dir = new File(path+ "/AsserGen").mkdirs();
+		BufferedWriter bw = null;
+		try {
+		bw = new BufferedWriter(new FileWriter(path+"/AsserGen/assergen.cpp", false));
+		bw.write(st);
+		bw.newLine();
+		bw.flush();
+		} catch (IOException ioe) {
+		ioe.printStackTrace();
+		} finally {
+		if (bw != null) try {
+		bw.close();
+		}
+		catch (IOException ioe2){}
+		}
+		
+	
+	}
+
 	private ArrayList<String> getArgs(ASTTreeNode node)
 	{
 		ArrayList<String> args = new ArrayList<String>();
@@ -198,9 +266,16 @@ public class AssertionGenerator {
 				}
 				else if(c.get(0).tag == 107 && c.get(1).tag == 107 && c.get(2).tag == 101 && c.get(3).tag == 104)
 				{
-					
-					ASTTreeNode r8 = createRuleNode("r8", node, evt);
-					return r8;
+					//System.out.println("CHECK::: " + c.get(2).children.get(0).getContent() + " -- " + c.get(3).children.get(0).getContent());
+					if(c.get(2).children.get(0).getContent().equals(c.get(3).children.get(1).getContent())){
+						ASTTreeNode r8 = createRuleNode("r8", node, evt);
+						return r8;
+					}
+					else if(c.get(2).children.get(0).getContent().equals(c.get(3).children.get(0).getContent()))
+					{
+						ASTTreeNode r11 = createRuleNode("r11", node, evt);
+						return r11;	
+					}
 				}
 				else if(c.get(0).tag == 107 && c.get(1).tag == 107 && c.get(2).tag == 101 && c.get(3).tag == 105)
 				{
@@ -210,8 +285,16 @@ public class AssertionGenerator {
 				}
 				else if(c.get(0).tag == 107 && c.get(1).tag == 107 && c.get(2).tag == 101 && c.get(3).tag == 106)
 				{
-					ASTTreeNode r10 = createRuleNode("r10", node, evt);
-					return r10;
+					if(c.get(2).children.get(0).getContent().equals(c.get(3).children.get(1).getContent())){
+						ASTTreeNode r10 = createRuleNode("r10", node, evt);
+						return r10;
+					}
+					else if(c.get(2).children.get(0).getContent().equals(c.get(3).children.get(0).getContent()))
+					{
+						ASTTreeNode r12 = createRuleNode("r12", node, evt);
+						return r12;	
+					}
+
 
 				}
 			}
@@ -234,6 +317,8 @@ public class AssertionGenerator {
 		h.put("r8", 11108);
 		h.put("r9", 11109);
 		h.put("r10", 11110);
+		h.put("r11", 11111);
+		h.put("r12", 11112);
 		
 		ASTTreeNode rn = new ASTTreeNode(r, r, h.get(r));
 		for(String s : getArgs(node))
@@ -257,14 +342,19 @@ public class AssertionGenerator {
 			{
 				for(IGuard g : e.getGuards())
 				{
-					//System.out.println(g.getPredicateString());
-					ASTTreeWalker w = new ASTTreeWalker();
+					String comment = "";
 					ASTBuilder tree = new ASTBuilder(variables, types);
 					node = tree.treeBuilder(g.getPredicateString(), machine);
-					ASTTreeNode assernode = createAsserTree(node, "Guard: " + g.getLabel() + " Event: " + evt );
-					//return assernode;
-					//w.treePrinter(node);
-					//node.addNewChild(tree.treeBuilder(evt, machine));
+					try{
+						comment = g.getComment() + " (" + g.getLabel() + "@" + evt + ")";
+					}
+					catch(Exception e1)
+					{
+						comment = " (" + g.getLabel() + "@" + evt + ")";
+					}
+				
+						
+					ASTTreeNode assernode = createAsserTree(node, comment);
 					allnodes.children.get(0).addNewChild(assernode);
 				}
 				
@@ -345,10 +435,5 @@ public class AssertionGenerator {
 				return " *ND* ";
 		}
 
-	}
-
-	public void outputGeneratedAssert() {
-		// TODO Auto-generated method stub
-		
 	}
 }
